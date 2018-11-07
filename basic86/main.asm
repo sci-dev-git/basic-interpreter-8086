@@ -402,6 +402,27 @@ LCMP_B_AND_LT:
 !BCC_ENDASM
 !BCC_ASM
 
+! ldecl.s
+
+!	.globl	ldecl
+!	.globl	ldecul
+
+ldecl:
+ldecul:
+	cmp	word ptr [bx],*0
+	je	LDEC_BOTH
+	dec	word ptr [bx]
+	ret
+
+	.even
+
+LDEC_BOTH:
+	dec	word ptr [bx]
+	dec	word ptr 2[bx]
+	ret
+!BCC_ENDASM
+!BCC_ASM
+
 ! ldivul.s
 ! unsigned bx:ax / 2(di):(di), quotient bx:ax,remainder di:cx, dx not preserved
 
@@ -463,6 +484,15 @@ lsubul:
 !BCC_EOS
 !BCC_EOS
 !BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
 .blkb	1
 _outptr:
 .word	0
@@ -473,21 +503,10 @@ _putc:
 !BCC_EOS
 push	bp
 mov	bp,sp
-.3:
-mov	al,4[bp]
-cmp	al,*$A
-jne 	.1
-.2:
-mov	ax,*$D
-push	ax
-call	_putc
-mov	sp,bp
-!BCC_EOS
-.1:
 mov	ax,[_outptr]
 test	ax,ax
-je  	.4
-.5:
+je  	.1
+.2:
 mov	bx,[_outptr]
 inc	bx
 mov	[_outptr],bx
@@ -497,11 +516,11 @@ mov	-1[bx],al
 pop	bp
 ret
 !BCC_EOS
-.4:
+.1:
 mov	al,4[bp]
 xor	ah,ah
 push	ax
-call	_putch
+call	_framebuffer_putch
 mov	sp,bp
 !BCC_EOS
 pop	bp
@@ -513,7 +532,7 @@ _puts:
 push	bp
 mov	bp,sp
 push	4[bp]
-call	_print_str
+call	_framebuffer_print
 mov	sp,bp
 !BCC_EOS
 pop	bp
@@ -530,7 +549,7 @@ mov	bp,sp
 add	sp,*-$2E
 !BCC_EOS
 !BCC_EOS
-.8:
+.5:
 mov	bx,4[bp]
 inc	bx
 mov	4[bp],bx
@@ -539,15 +558,15 @@ mov	-$23[bp],al
 !BCC_EOS
 mov	al,-$23[bp]
 test	al,al
-jne 	.9
-.A:
-br 	.6
+jne 	.6
+.7:
+br 	.3
 !BCC_EOS
-.9:
+.6:
 mov	al,-$23[bp]
 cmp	al,*$25
-je  	.B
-.C:
+je  	.8
+.9:
 mov	al,-$23[bp]
 xor	ah,ah
 push	ax
@@ -555,9 +574,9 @@ call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-br 	.7
+br 	.4
 !BCC_EOS
-.B:
+.8:
 xor	ax,ax
 mov	-$A[bp],ax
 !BCC_EOS
@@ -569,8 +588,8 @@ mov	-$23[bp],al
 !BCC_EOS
 mov	al,-$23[bp]
 cmp	al,*$30
-jne 	.D
-.E:
+jne 	.A
+.B:
 mov	ax,*1
 mov	-$A[bp],ax
 !BCC_EOS
@@ -580,12 +599,12 @@ mov	4[bp],bx
 mov	al,-1[bx]
 mov	-$23[bp],al
 !BCC_EOS
-jmp .F
-.D:
+jmp .C
+.A:
 mov	al,-$23[bp]
 cmp	al,*$2D
-jne 	.10
-.11:
+jne 	.D
+.E:
 mov	ax,*2
 mov	-$A[bp],ax
 !BCC_EOS
@@ -595,14 +614,14 @@ mov	4[bp],bx
 mov	al,-1[bx]
 mov	-$23[bp],al
 !BCC_EOS
-.10:
-.F:
+.D:
+.C:
 xor	ax,ax
 mov	-8[bp],ax
 !BCC_EOS
 !BCC_EOS
-jmp .14
-.15:
+jmp .11
+.12:
 mov	ax,-8[bp]
 mov	dx,ax
 shl	ax,*1
@@ -614,30 +633,30 @@ adc	ah,*0
 add	ax,*-$30
 mov	-8[bp],ax
 !BCC_EOS
-.13:
+.10:
 mov	bx,4[bp]
 inc	bx
 mov	4[bp],bx
 mov	al,-1[bx]
 mov	-$23[bp],al
-.14:
+.11:
 mov	al,-$23[bp]
 cmp	al,*$30
-jb  	.16
-.17:
+jb  	.13
+.14:
 mov	al,-$23[bp]
 cmp	al,*$39
-jbe	.15
-.16:
-.12:
+jbe	.12
+.13:
+.F:
 mov	al,-$23[bp]
 cmp	al,*$6C
-je  	.19
-.1A:
+je  	.16
+.17:
 mov	al,-$23[bp]
 cmp	al,*$4C
-jne 	.18
-.19:
+jne 	.15
+.16:
 mov	ax,-$A[bp]
 or	al,*4
 mov	-$A[bp],ax
@@ -648,30 +667,30 @@ mov	4[bp],bx
 mov	al,-1[bx]
 mov	-$23[bp],al
 !BCC_EOS
-.18:
+.15:
 mov	al,-$23[bp]
 test	al,al
-jne 	.1B
-.1C:
-br 	.6
+jne 	.18
+.19:
+br 	.3
 !BCC_EOS
-.1B:
+.18:
 mov	al,-$23[bp]
 mov	-$24[bp],al
 !BCC_EOS
 mov	al,-$24[bp]
 cmp	al,*$61
-jb  	.1D
-.1E:
+jb  	.1A
+.1B:
 mov	al,-$24[bp]
 xor	ah,ah
 add	ax,*-$20
 mov	-$24[bp],al
 !BCC_EOS
-.1D:
+.1A:
 mov	al,-$24[bp]
-br 	.21
-.22:
+br 	.1E
+.1F:
 mov	ax,6[bp]
 inc	ax
 inc	ax
@@ -684,70 +703,70 @@ xor	ax,ax
 mov	-6[bp],ax
 !BCC_EOS
 !BCC_EOS
-jmp .25
-.26:
+jmp .22
+.23:
 !BCC_EOS
-.24:
+.21:
 mov	ax,-6[bp]
 inc	ax
 mov	-6[bp],ax
-.25:
+.22:
 mov	ax,-6[bp]
 add	ax,-$26[bp]
 mov	bx,ax
 mov	al,[bx]
 test	al,al
-jne	.26
+jne	.23
+.24:
+.20:
+jmp .26
 .27:
-.23:
-jmp .29
-.2A:
 mov	ax,*$20
 push	ax
 call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.29:
+.26:
 mov	al,-$A[bp]
 and	al,*2
 test	al,al
-jne 	.2B
-.2C:
+jne 	.28
+.29:
 mov	ax,-6[bp]
 inc	ax
 mov	-6[bp],ax
 dec	ax
 cmp	ax,-8[bp]
-jb 	.2A
-.2B:
+jb 	.27
 .28:
+.25:
 push	-$26[bp]
 call	_puts
 inc	sp
 inc	sp
 !BCC_EOS
-jmp .2E
-.2F:
+jmp .2B
+.2C:
 mov	ax,*$20
 push	ax
 call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.2E:
+.2B:
 mov	ax,-6[bp]
 inc	ax
 mov	-6[bp],ax
 dec	ax
 cmp	ax,-8[bp]
-jb 	.2F
-.30:
+jb 	.2C
 .2D:
+.2A:
 add	sp,#-$30-..FFFF
-br 	.7
+br 	.4
 !BCC_EOS
-.31:
+.2E:
 mov	ax,6[bp]
 inc	ax
 inc	ax
@@ -761,35 +780,35 @@ inc	sp
 inc	sp
 !BCC_EOS
 add	sp,#-$30-..FFFF
-br 	.7
+br 	.4
 !BCC_EOS
-.32:
+.2F:
 mov	ax,*2
 mov	-2[bp],ax
 !BCC_EOS
-jmp .1F
+jmp .1C
 !BCC_EOS
-.33:
+.30:
 mov	ax,*8
 mov	-2[bp],ax
 !BCC_EOS
-jmp .1F
+jmp .1C
 !BCC_EOS
-.34:
-.35:
+.31:
+.32:
 mov	ax,*$A
 mov	-2[bp],ax
 !BCC_EOS
-jmp .1F
+jmp .1C
 !BCC_EOS
-.36:
-.37:
+.33:
+.34:
 mov	ax,*$10
 mov	-2[bp],ax
 !BCC_EOS
-jmp .1F
+jmp .1C
 !BCC_EOS
-.38:
+.35:
 mov	al,-$23[bp]
 xor	ah,ah
 push	ax
@@ -798,34 +817,34 @@ inc	sp
 inc	sp
 !BCC_EOS
 add	sp,#-$30-..FFFF
-br 	.7
+br 	.4
 !BCC_EOS
-jmp .1F
-.21:
+jmp .1C
+.1E:
 sub	al,*$42
-je 	.32
+je 	.2F
+sub	al,*1
+je 	.2E
 sub	al,*1
 je 	.31
-sub	al,*1
-je 	.34
 sub	al,*$B
-je 	.33
+je 	.30
 sub	al,*1
-je 	.36
+je 	.33
 sub	al,*3
-beq 	.22
+beq 	.1F
 sub	al,*2
-je 	.35
+je 	.32
 sub	al,*3
-je 	.37
-jmp	.38
-.1F:
+je 	.34
+jmp	.35
+.1C:
 ..FFFF	=	-$30
 mov	al,-$A[bp]
 and	al,*4
 test	al,al
-je  	.39
-.3A:
+je  	.36
+.37:
 mov	ax,6[bp]
 add	ax,*4
 mov	6[bp],ax
@@ -835,12 +854,12 @@ mov	bx,-2[bx]
 mov	-$2A[bp],ax
 mov	-$28[bp],bx
 !BCC_EOS
-jmp .3B
-.39:
+jmp .38
+.36:
 mov	al,-$24[bp]
 cmp	al,*$44
-jne 	.3C
-.3D:
+jne 	.39
+.3A:
 mov	ax,6[bp]
 inc	ax
 inc	ax
@@ -849,8 +868,8 @@ mov	bx,ax
 mov	ax,-2[bx]
 cwd
 mov	bx,dx
-jmp .3F
-.3C:
+jmp .3C
+.39:
 mov	ax,6[bp]
 inc	ax
 inc	ax
@@ -858,21 +877,21 @@ mov	6[bp],ax
 mov	bx,ax
 mov	ax,-2[bx]
 xor	bx,bx
-.3F:
+.3C:
 mov	-$2A[bp],ax
 mov	-$28[bp],bx
 !BCC_EOS
-.3B:
+.38:
 mov	al,-$24[bp]
 cmp	al,*$44
-jne 	.40
-.42:
+jne 	.3D
+.3F:
 xor	ax,ax
 xor	bx,bx
 lea	di,-$2A[bp]
 call	lcmpl
-jle 	.40
-.41:
+jle 	.3D
+.3E:
 xor	ax,ax
 xor	bx,bx
 lea	di,-$2A[bp]
@@ -884,7 +903,7 @@ mov	ax,-$A[bp]
 or	al,*$10
 mov	-$A[bp],ax
 !BCC_EOS
-.40:
+.3D:
 xor	ax,ax
 mov	-4[bp],ax
 !BCC_EOS
@@ -893,7 +912,7 @@ mov	bx,-$28[bp]
 mov	-$2E[bp],ax
 mov	-$2C[bp],bx
 !BCC_EOS
-.45:
+.42:
 mov	ax,-2[bp]
 xor	bx,bx
 push	bx
@@ -919,23 +938,23 @@ add	sp,*4
 !BCC_EOS
 mov	al,-$24[bp]
 cmp	al,*9
-jbe 	.46
-.47:
+jbe 	.43
+.44:
 mov	al,-$23[bp]
 cmp	al,*$78
-jne 	.48
-.49:
+jne 	.45
+.46:
 mov	al,*$27
-jmp .4A
-.48:
+jmp .47
+.45:
 mov	al,*7
-.4A:
+.47:
 xor	ah,ah
 add	al,-$24[bp]
 adc	ah,*0
 mov	-$24[bp],al
 !BCC_EOS
-.46:
+.43:
 mov	al,-$24[bp]
 xor	ah,ah
 add	ax,*$30
@@ -951,7 +970,7 @@ mov	-$22[bx],al
 inc	sp
 inc	sp
 !BCC_EOS
-.44:
+.41:
 xor	ax,ax
 xor	bx,bx
 push	bx
@@ -961,19 +980,19 @@ mov	bx,-$2C[bp]
 lea	di,-$32[bp]
 call	lcmpul
 lea	sp,-$2E[bp]
-je  	.4B
-.4C:
+je  	.48
+.49:
 mov	ax,-4[bp]
 cmp	ax,*$18
-blo 	.45
-.4B:
+blo 	.42
+.48:
 !BCC_EOS
-.43:
+.40:
 mov	al,-$A[bp]
 and	al,*$10
 test	al,al
-je  	.4D
-.4E:
+je  	.4A
+.4B:
 mov	ax,-4[bp]
 inc	ax
 mov	-4[bp],ax
@@ -983,24 +1002,24 @@ add	bx,ax
 mov	al,*$2D
 mov	-$22[bx],al
 !BCC_EOS
-.4D:
+.4A:
 mov	ax,-4[bp]
 mov	-6[bp],ax
 !BCC_EOS
 mov	al,-$A[bp]
 and	al,*1
 test	al,al
-je  	.4F
-.50:
+je  	.4C
+.4D:
 mov	al,*$30
-jmp .51
-.4F:
+jmp .4E
+.4C:
 mov	al,*$20
-.51:
+.4E:
 mov	-$24[bp],al
 !BCC_EOS
-jmp .53
-.54:
+jmp .50
+.51:
 mov	al,-$24[bp]
 xor	ah,ah
 push	ax
@@ -1008,21 +1027,21 @@ call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.53:
+.50:
 mov	al,-$A[bp]
 and	al,*2
 test	al,al
-jne 	.55
-.56:
+jne 	.52
+.53:
 mov	ax,-6[bp]
 inc	ax
 mov	-6[bp],ax
 dec	ax
 cmp	ax,-8[bp]
-jb 	.54
-.55:
+jb 	.51
 .52:
-.59:
+.4F:
+.56:
 mov	ax,-4[bp]
 dec	ax
 mov	-4[bp],ax
@@ -1035,35 +1054,33 @@ call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.58:
+.55:
 mov	ax,-4[bp]
 test	ax,ax
-jne	.59
-.5A:
-!BCC_EOS
+jne	.56
 .57:
-jmp .5C
-.5D:
+!BCC_EOS
+.54:
+jmp .59
+.5A:
 mov	ax,*$20
 push	ax
 call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.5C:
+.59:
 mov	ax,-6[bp]
 inc	ax
 mov	-6[bp],ax
 dec	ax
 cmp	ax,-8[bp]
-jb 	.5D
-.5E:
+jb 	.5A
 .5B:
-.7:
-br 	.8
-.6:
-call	_usart_flush
-!BCC_EOS
+.58:
+.4:
+br 	.5
+.3:
 mov	sp,bp
 pop	bp
 ret
@@ -1165,14 +1182,14 @@ mov	bp,sp
 add	sp,*-8
 push	8[bp]
 push	6[bp]
-mov	bx,#.5F
+mov	bx,#.5C
 push	bx
 call	_printf
 add	sp,*6
 !BCC_EOS
 mov	ax,$C[bp]
-br 	.62
-.63:
+br 	.5F
+.60:
 mov	bx,4[bp]
 mov	-4[bp],bx
 !BCC_EOS
@@ -1180,29 +1197,29 @@ xor	ax,ax
 mov	-2[bp],ax
 !BCC_EOS
 !BCC_EOS
-jmp .66
-.67:
+jmp .63
+.64:
 mov	ax,-2[bp]
 add	ax,-4[bp]
 mov	bx,ax
 mov	al,[bx]
 xor	ah,ah
 push	ax
-mov	bx,#.68
+mov	bx,#.65
 push	bx
 call	_printf
 add	sp,*4
 !BCC_EOS
-.65:
+.62:
 mov	ax,-2[bp]
 inc	ax
 mov	-2[bp],ax
-.66:
+.63:
 mov	ax,-2[bp]
 cmp	ax,$A[bp]
-jl 	.67
-.69:
-.64:
+jl 	.64
+.66:
+.61:
 mov	ax,*$20
 push	ax
 call	_putc
@@ -1213,110 +1230,110 @@ xor	ax,ax
 mov	-2[bp],ax
 !BCC_EOS
 !BCC_EOS
-jmp .6C
-.6D:
+jmp .69
+.6A:
 mov	ax,-2[bp]
 add	ax,-4[bp]
 mov	bx,ax
 mov	al,[bx]
 cmp	al,*$20
-jb  	.6E
-.70:
+jb  	.6B
+.6D:
 mov	ax,-2[bp]
 add	ax,-4[bp]
 mov	bx,ax
 mov	al,[bx]
 cmp	al,*$7E
-ja  	.6E
-.6F:
+ja  	.6B
+.6C:
 mov	ax,-2[bp]
 add	ax,-4[bp]
 mov	bx,ax
 mov	al,[bx]
 xor	ah,ah
-jmp .71
-.6E:
+jmp .6E
+.6B:
 mov	ax,*$2E
-.71:
+.6E:
 xor	ah,ah
 push	ax
 call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.6B:
+.68:
 mov	ax,-2[bp]
 inc	ax
 mov	-2[bp],ax
-.6C:
+.69:
 mov	ax,-2[bp]
 cmp	ax,$A[bp]
-jl 	.6D
-.72:
-.6A:
-jmp .60
+jl 	.6A
+.6F:
+.67:
+jmp .5D
 !BCC_EOS
-.73:
+.70:
 mov	bx,4[bp]
 mov	-6[bp],bx
 !BCC_EOS
-.76:
+.73:
 mov	bx,-6[bp]
 inc	bx
 inc	bx
 mov	-6[bp],bx
 push	-2[bx]
-mov	bx,#.77
+mov	bx,#.74
 push	bx
 call	_printf
 add	sp,*4
 !BCC_EOS
-.75:
+.72:
 mov	ax,$A[bp]
 dec	ax
 mov	$A[bp],ax
 test	ax,ax
-jne	.76
-.78:
+jne	.73
+.75:
 !BCC_EOS
-.74:
-jmp .60
+.71:
+jmp .5D
 !BCC_EOS
-.79:
+.76:
 mov	bx,4[bp]
 mov	-8[bp],bx
 !BCC_EOS
-.7C:
+.79:
 mov	bx,-8[bp]
 add	bx,*4
 mov	-8[bp],bx
 push	-2[bx]
 push	-4[bx]
-mov	bx,#.7D
+mov	bx,#.7A
 push	bx
 call	_printf
 add	sp,*6
 !BCC_EOS
-.7B:
+.78:
 mov	ax,$A[bp]
 dec	ax
 mov	$A[bp],ax
 test	ax,ax
-jne	.7C
-.7E:
+jne	.79
+.7B:
 !BCC_EOS
-.7A:
-jmp .60
+.77:
+jmp .5D
 !BCC_EOS
-jmp .60
-.62:
+jmp .5D
+.5F:
 sub	ax,*1
-beq 	.63
+beq 	.60
 sub	ax,*1
-je 	.73
+je 	.70
 sub	ax,*2
-je 	.79
-.60:
+je 	.76
+.5D:
 ..FFFE	=	-$A
 mov	ax,*$A
 push	ax
@@ -1341,40 +1358,41 @@ mov	-4[bp],ax
 !BCC_EOS
 !BCC_EOS
 !BCC_EOS
-.81:
-xor	ax,ax
+.7E:
+call	_usart_getch
+xor	ah,ah
 mov	-2[bp],ax
 !BCC_EOS
 mov	ax,-2[bp]
 test	ax,ax
-jne 	.82
-.83:
+jne 	.7F
+.80:
 xor	ax,ax
 mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.82:
+.7F:
 mov	ax,-2[bp]
 cmp	ax,*$D
-jne 	.84
-.85:
-jmp .7F
+jne 	.81
+.82:
+jmp .7C
 !BCC_EOS
-.84:
+.81:
 mov	ax,-2[bp]
 cmp	ax,*8
-jne 	.86
-.88:
+jne 	.83
+.85:
 mov	ax,-4[bp]
 test	ax,ax
-je  	.86
-.87:
+je  	.83
+.84:
 mov	ax,-4[bp]
 dec	ax
 mov	-4[bp],ax
 !BCC_EOS
-.8A:
+.87:
 mov	al,-2[bp]
 xor	ah,ah
 push	ax
@@ -1382,19 +1400,19 @@ call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.89:
-jmp .80
-!BCC_EOS
 .86:
+jmp .7D
+!BCC_EOS
+.83:
 mov	ax,-2[bp]
 cmp	ax,*$20
-jl  	.8B
-.8D:
+jl  	.88
+.8A:
 mov	ax,6[bp]
 dec	ax
 cmp	ax,-4[bp]
-jle 	.8B
-.8C:
+jle 	.88
+.89:
 mov	ax,-4[bp]
 inc	ax
 mov	-4[bp],ax
@@ -1404,7 +1422,7 @@ mov	bx,ax
 mov	al,-2[bp]
 mov	[bx],al
 !BCC_EOS
-.8F:
+.8C:
 mov	al,-2[bp]
 xor	ah,ah
 push	ax
@@ -1412,25 +1430,25 @@ call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.8E:
 .8B:
-.80:
-jmp	.81
-.7F:
+.88:
+.7D:
+jmp	.7E
+.7C:
 mov	ax,-4[bp]
 add	ax,4[bp]
 mov	bx,ax
 xor	al,al
 mov	[bx],al
 !BCC_EOS
-.91:
+.8E:
 mov	ax,*$A
 push	ax
 call	_putc
 inc	sp
 inc	sp
 !BCC_EOS
-.90:
+.8D:
 mov	ax,*1
 mov	sp,bp
 pop	bp
@@ -1646,6 +1664,256 @@ _memcpy.s	set	4
   pop	di
 !BCC_ENDASM
 ret
+export	_memset
+_memset:
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_ASM
+_memset.l	set	6
+_memset.str	set	2
+_memset.c	set	4
+  mov	bx,sp
+  push	di
+
+  push	es
+  push	ds	; Im not sure if this is needed, so just in case.
+  pop	es
+  cld
+
+
+
+
+
+  mov	di,[bx+2]	; Fetch
+  mov	ax,[bx+4]
+  mov	cx,[bx+6]
+
+; How much difference does this alignment make ?
+; I don`t think it`s significant cause most will already be aligned.
+
+;  test	cx,cx		; Zero size - skip
+;  je	xit
+;
+;  test	di,#1		; Line it up
+;  je	s_1
+;  stosb
+;  dec	cx
+;s_1:
+
+  mov	ah,al		; Replicate byte
+  shr	cx,#1		; Do this faster by doing a sto word
+  rep			; Bzzzzz ...
+  stosw
+  adc	cx,cx		; Retrieve the leftover 1 bit from cflag.
+
+  rep			; ... z
+  stosb
+
+xit:
+  mov	ax,[bx+2]
+  pop	es
+  pop	di
+!BCC_ENDASM
+ret
+export	_strcasecmp
+_strcasecmp:
+!BCC_EOS
+!BCC_EOS
+push	bp
+mov	bp,sp
+!BCC_EOS
+!BCC_EOS
+.91:
+mov	bx,6[bp]
+mov	si,4[bp]
+mov	al,[si]
+cmp	al,[bx]
+je  	.92
+.93:
+mov	bx,6[bp]
+mov	al,[bx]
+cmp	al,*$41
+jb  	.96
+.98:
+mov	bx,6[bp]
+mov	al,[bx]
+cmp	al,*$5A
+ja  	.96
+.97:
+mov	bx,6[bp]
+mov	al,[bx]
+xor	al,*$20
+jmp .99
+.96:
+mov	bx,6[bp]
+mov	al,[bx]
+.99:
+push	ax
+mov	bx,4[bp]
+mov	al,[bx]
+cmp	al,*$41
+jb  	.9A
+.9C:
+mov	bx,4[bp]
+mov	al,[bx]
+cmp	al,*$5A
+ja  	.9A
+.9B:
+mov	bx,4[bp]
+mov	al,[bx]
+xor	al,*$20
+jmp .9D
+.9A:
+mov	bx,4[bp]
+mov	al,[bx]
+.9D:
+cmp	al,-2[bp]
+mov	sp,bp
+je  	.94
+.95:
+mov	bx,6[bp]
+mov	si,4[bp]
+mov	al,[si]
+xor	ah,ah
+sub	al,[bx]
+sbb	ah,*0
+pop	bp
+ret
+!BCC_EOS
+.94:
+jmp .9E
+.92:
+mov	bx,4[bp]
+mov	al,[bx]
+test	al,al
+jne 	.9F
+.A0:
+jmp .8F
+!BCC_EOS
+.9F:
+.9E:
+mov	bx,4[bp]
+inc	bx
+mov	4[bp],bx
+!BCC_EOS
+mov	bx,6[bp]
+inc	bx
+mov	6[bp],bx
+!BCC_EOS
+.90:
+br 	.91
+.8F:
+xor	ax,ax
+pop	bp
+ret
+!BCC_EOS
+! Register BX used in function strcasecmp
+export	_strncasecmp
+_strncasecmp:
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+push	bp
+mov	bp,sp
+br 	.A2
+.A3:
+mov	bx,6[bp]
+mov	si,4[bp]
+mov	al,[si]
+cmp	al,[bx]
+je  	.A4
+.A5:
+mov	bx,6[bp]
+mov	al,[bx]
+cmp	al,*$41
+jb  	.A8
+.AA:
+mov	bx,6[bp]
+mov	al,[bx]
+cmp	al,*$5A
+ja  	.A8
+.A9:
+mov	bx,6[bp]
+mov	al,[bx]
+xor	al,*$20
+jmp .AB
+.A8:
+mov	bx,6[bp]
+mov	al,[bx]
+.AB:
+push	ax
+mov	bx,4[bp]
+mov	al,[bx]
+cmp	al,*$41
+jb  	.AC
+.AE:
+mov	bx,4[bp]
+mov	al,[bx]
+cmp	al,*$5A
+ja  	.AC
+.AD:
+mov	bx,4[bp]
+mov	al,[bx]
+xor	al,*$20
+jmp .AF
+.AC:
+mov	bx,4[bp]
+mov	al,[bx]
+.AF:
+cmp	al,-2[bp]
+mov	sp,bp
+je  	.A6
+.A7:
+mov	bx,6[bp]
+mov	si,4[bp]
+mov	al,[si]
+xor	ah,ah
+sub	al,[bx]
+sbb	ah,*0
+pop	bp
+ret
+!BCC_EOS
+.A6:
+jmp .B0
+.A4:
+mov	bx,4[bp]
+mov	al,[bx]
+test	al,al
+jne 	.B1
+.B2:
+xor	ax,ax
+pop	bp
+ret
+!BCC_EOS
+.B1:
+.B0:
+mov	bx,4[bp]
+inc	bx
+mov	4[bp],bx
+!BCC_EOS
+mov	bx,6[bp]
+inc	bx
+mov	6[bp],bx
+!BCC_EOS
+mov	ax,8[bp]
+mov	si,$A[bp]
+lea	bx,8[bp]
+call	ldecl
+!BCC_EOS
+.A2:
+xor	ax,ax
+xor	bx,bx
+lea	di,8[bp]
+call	lcmpul
+blo 	.A3
+.B3:
+.A1:
+xor	ax,ax
+pop	bp
+ret
+!BCC_EOS
+! Register BX used in function strncasecmp
 export	_atoi
 _atoi:
 !BCC_EOS
@@ -1661,41 +1929,41 @@ dec	sp
 xor	ax,ax
 mov	-4[bp],ax
 !BCC_EOS
-jmp .93
-.94:
+jmp .B5
+.B6:
 inc	si
 !BCC_EOS
-.93:
+.B5:
 mov	al,[si]
 cmp	al,*$20
-ja  	.95
-.96:
+ja  	.B7
+.B8:
 mov	al,[si]
 test	al,al
-jne	.94
-.95:
-.92:
+jne	.B6
+.B7:
+.B4:
 mov	al,[si]
 cmp	al,*$2D
-jne 	.97
-.98:
+jne 	.B9
+.BA:
 mov	ax,*1
 mov	-4[bp],ax
 !BCC_EOS
 inc	si
 !BCC_EOS
-jmp .99
-.97:
+jmp .BB
+.B9:
 mov	al,[si]
 cmp	al,*$2B
-jne 	.9A
-.9B:
+jne 	.BC
+.BD:
 inc	si
 !BCC_EOS
-.9A:
-.99:
-jmp .9D
-.9E:
+.BC:
+.BB:
+jmp .BF
+.C0:
 inc	si
 mov	al,-1[si]
 xor	ah,ah
@@ -1712,26 +1980,26 @@ inc	sp
 inc	sp
 mov	-2[bp],ax
 !BCC_EOS
-.9D:
+.BF:
 mov	al,[si]
 cmp	al,*$30
-jb  	.9F
-.A0:
+jb  	.C1
+.C2:
 mov	al,[si]
 cmp	al,*$39
-jbe	.9E
-.9F:
-.9C:
+jbe	.C0
+.C1:
+.BE:
 mov	ax,-4[bp]
 test	ax,ax
-je  	.A1
-.A2:
+je  	.C3
+.C4:
 xor	ax,ax
 sub	ax,-2[bp]
-jmp .A3
-.A1:
+jmp .C5
+.C3:
 mov	ax,-2[bp]
-.A3:
+.C5:
 mov	sp,bp
 pop	bp
 ret
@@ -1767,6 +2035,1126 @@ _get_ss:
 !BCC_ENDASM
 !BCC_EOS
 !BCC_EOS
+.data
+.word 0
+_ascii_font_8x5:
+.byte	0
+.byte	0
+.byte	0
+.byte	0
+.byte	0
+.byte	0
+.byte	0
+.byte	$4F
+.byte	0
+.byte	0
+.byte	0
+.byte	7
+.byte	0
+.byte	7
+.byte	0
+.byte	$14
+.byte	$7F
+.byte	$14
+.byte	$7F
+.byte	$14
+.byte	$24
+.byte	$2A
+.byte	$7F
+.byte	$2A
+.byte	$12
+.byte	$23
+.byte	$13
+.byte	8
+.byte	$64
+.byte	$62
+.byte	$36
+.byte	$49
+.byte	$55
+.byte	$22
+.byte	$50
+.byte	0
+.byte	5
+.byte	7
+.byte	0
+.byte	0
+.byte	0
+.byte	$1C
+.byte	$22
+.byte	$41
+.byte	0
+.byte	0
+.byte	$41
+.byte	$22
+.byte	$1C
+.byte	0
+.byte	$14
+.byte	8
+.byte	$3E
+.byte	8
+.byte	$14
+.byte	8
+.byte	8
+.byte	$3E
+.byte	8
+.byte	8
+.byte	0
+.byte	$50
+.byte	$30
+.byte	0
+.byte	0
+.byte	8
+.byte	8
+.byte	8
+.byte	8
+.byte	8
+.byte	0
+.byte	$60
+.byte	$60
+.byte	0
+.byte	0
+.byte	$20
+.byte	$10
+.byte	8
+.byte	4
+.byte	2
+.byte	$3E
+.byte	$51
+.byte	$49
+.byte	$45
+.byte	$3E
+.byte	0
+.byte	$42
+.byte	$7F
+.byte	$40
+.byte	0
+.byte	$42
+.byte	$61
+.byte	$51
+.byte	$49
+.byte	$46
+.byte	$21
+.byte	$41
+.byte	$45
+.byte	$4B
+.byte	$31
+.byte	$18
+.byte	$14
+.byte	$12
+.byte	$7F
+.byte	$10
+.byte	$27
+.byte	$45
+.byte	$45
+.byte	$45
+.byte	$39
+.byte	$3C
+.byte	$4A
+.byte	$49
+.byte	$49
+.byte	$30
+.byte	1
+.byte	$71
+.byte	9
+.byte	5
+.byte	3
+.byte	$36
+.byte	$49
+.byte	$49
+.byte	$49
+.byte	$36
+.byte	6
+.byte	$49
+.byte	$49
+.byte	$29
+.byte	$1E
+.byte	0
+.byte	$36
+.byte	$36
+.byte	0
+.byte	0
+.byte	0
+.byte	$56
+.byte	$36
+.byte	0
+.byte	0
+.byte	8
+.byte	$14
+.byte	$22
+.byte	$41
+.byte	0
+.byte	$14
+.byte	$14
+.byte	$14
+.byte	$14
+.byte	$14
+.byte	0
+.byte	$41
+.byte	$22
+.byte	$14
+.byte	8
+.byte	2
+.byte	1
+.byte	$51
+.byte	9
+.byte	6
+.byte	$32
+.byte	$49
+.byte	$79
+.byte	$41
+.byte	$3E
+.byte	$7E
+.byte	$11
+.byte	$11
+.byte	$11
+.byte	$7E
+.byte	$7F
+.byte	$49
+.byte	$49
+.byte	$49
+.byte	$36
+.byte	$3E
+.byte	$41
+.byte	$41
+.byte	$41
+.byte	$22
+.byte	$7F
+.byte	$41
+.byte	$41
+.byte	$22
+.byte	$1C
+.byte	$7F
+.byte	$49
+.byte	$49
+.byte	$49
+.byte	$41
+.byte	$7F
+.byte	9
+.byte	9
+.byte	9
+.byte	1
+.byte	$3E
+.byte	$41
+.byte	$49
+.byte	$49
+.byte	$7A
+.byte	$7F
+.byte	8
+.byte	8
+.byte	8
+.byte	$7F
+.byte	0
+.byte	$41
+.byte	$7F
+.byte	$41
+.byte	0
+.byte	$20
+.byte	$40
+.byte	$41
+.byte	$3F
+.byte	1
+.byte	$7F
+.byte	8
+.byte	$14
+.byte	$22
+.byte	$41
+.byte	$7F
+.byte	$40
+.byte	$40
+.byte	$40
+.byte	$40
+.byte	$7F
+.byte	2
+.byte	$C
+.byte	2
+.byte	$7F
+.byte	$7F
+.byte	4
+.byte	8
+.byte	$10
+.byte	$7F
+.byte	$3E
+.byte	$41
+.byte	$41
+.byte	$41
+.byte	$3E
+.byte	$7F
+.byte	9
+.byte	9
+.byte	9
+.byte	6
+.byte	$3E
+.byte	$41
+.byte	$51
+.byte	$21
+.byte	$5E
+.byte	$7F
+.byte	9
+.byte	$19
+.byte	$29
+.byte	$46
+.byte	$46
+.byte	$49
+.byte	$49
+.byte	$49
+.byte	$31
+.byte	1
+.byte	1
+.byte	$7F
+.byte	1
+.byte	1
+.byte	$3F
+.byte	$40
+.byte	$40
+.byte	$40
+.byte	$3F
+.byte	$1F
+.byte	$20
+.byte	$40
+.byte	$20
+.byte	$1F
+.byte	$3F
+.byte	$40
+.byte	$38
+.byte	$40
+.byte	$3F
+.byte	$63
+.byte	$14
+.byte	8
+.byte	$14
+.byte	$63
+.byte	7
+.byte	8
+.byte	$70
+.byte	8
+.byte	7
+.byte	$61
+.byte	$51
+.byte	$49
+.byte	$45
+.byte	$43
+.byte	0
+.byte	$7F
+.byte	$41
+.byte	$41
+.byte	0
+.byte	2
+.byte	4
+.byte	8
+.byte	$10
+.byte	$20
+.byte	0
+.byte	$41
+.byte	$41
+.byte	$7F
+.byte	0
+.byte	4
+.byte	2
+.byte	1
+.byte	2
+.byte	4
+.byte	$40
+.byte	$40
+.byte	$40
+.byte	$40
+.byte	$40
+.byte	1
+.byte	2
+.byte	4
+.byte	0
+.byte	0
+.byte	$20
+.byte	$54
+.byte	$54
+.byte	$54
+.byte	$78
+.byte	$7F
+.byte	$48
+.byte	$48
+.byte	$48
+.byte	$30
+.byte	$38
+.byte	$44
+.byte	$44
+.byte	$44
+.byte	$44
+.byte	$30
+.byte	$48
+.byte	$48
+.byte	$48
+.byte	$7F
+.byte	$38
+.byte	$54
+.byte	$54
+.byte	$54
+.byte	$58
+.byte	0
+.byte	8
+.byte	$7E
+.byte	9
+.byte	2
+.byte	$48
+.byte	$54
+.byte	$54
+.byte	$54
+.byte	$3C
+.byte	$7F
+.byte	8
+.byte	8
+.byte	8
+.byte	$70
+.byte	0
+.byte	0
+.byte	$7A
+.byte	0
+.byte	0
+.byte	$20
+.byte	$40
+.byte	$40
+.byte	$3D
+.byte	0
+.byte	$7F
+.byte	$20
+.byte	$28
+.byte	$44
+.byte	0
+.byte	0
+.byte	$41
+.byte	$7F
+.byte	$40
+.byte	0
+.byte	$7C
+.byte	4
+.byte	$38
+.byte	4
+.byte	$7C
+.byte	$7C
+.byte	8
+.byte	4
+.byte	4
+.byte	$78
+.byte	$38
+.byte	$44
+.byte	$44
+.byte	$44
+.byte	$38
+.byte	$7C
+.byte	$14
+.byte	$14
+.byte	$14
+.byte	8
+.byte	8
+.byte	$14
+.byte	$14
+.byte	$14
+.byte	$7C
+.byte	$7C
+.byte	8
+.byte	4
+.byte	4
+.byte	8
+.byte	$48
+.byte	$54
+.byte	$54
+.byte	$54
+.byte	$24
+.byte	4
+.byte	4
+.byte	$3F
+.byte	$44
+.byte	$24
+.byte	$3C
+.byte	$40
+.byte	$40
+.byte	$40
+.byte	$3C
+.byte	$1C
+.byte	$20
+.byte	$40
+.byte	$20
+.byte	$1C
+.byte	$3C
+.byte	$40
+.byte	$30
+.byte	$40
+.byte	$3C
+.byte	$44
+.byte	$28
+.byte	$10
+.byte	$28
+.byte	$44
+.byte	4
+.byte	$48
+.byte	$30
+.byte	8
+.byte	4
+.byte	$44
+.byte	$64
+.byte	$54
+.byte	$4C
+.byte	$44
+.byte	8
+.byte	$36
+.byte	$41
+.byte	$41
+.byte	0
+.byte	0
+.byte	0
+.byte	$77
+.byte	0
+.byte	0
+.byte	0
+.byte	$41
+.byte	$41
+.byte	$36
+.byte	8
+.byte	4
+.byte	2
+.byte	2
+.byte	2
+.byte	1
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+.text
+export	_init_framebuffer
+_init_framebuffer:
+push	bp
+mov	bp,sp
+mov	ax,#$600
+push	ax
+mov	ax,#$AF
+push	ax
+call	_outb
+mov	sp,bp
+!BCC_EOS
+mov	ax,#$600
+push	ax
+mov	ax,#$A1
+push	ax
+call	_outb
+mov	sp,bp
+!BCC_EOS
+mov	ax,#$600
+push	ax
+mov	ax,#$AD
+push	ax
+call	_outb
+mov	sp,bp
+!BCC_EOS
+call	_framebuffer_clear
+!BCC_EOS
+pop	bp
+ret
+export	_framebuffer_setline
+_framebuffer_setline:
+!BCC_EOS
+push	bp
+mov	bp,sp
+mov	al,4[bp]
+and	al,*7
+mov	4[bp],al
+!BCC_EOS
+mov	al,4[bp]
+or	al,#$B0
+mov	4[bp],al
+!BCC_EOS
+mov	ax,#$600
+push	ax
+mov	al,4[bp]
+xor	ah,ah
+push	ax
+call	_outb
+mov	sp,bp
+!BCC_EOS
+pop	bp
+ret
+export	_framebuffer_setcolumn
+_framebuffer_setcolumn:
+!BCC_EOS
+!BCC_EOS
+push	bp
+mov	bp,sp
+dec	sp
+dec	sp
+mov	al,4[bp]
+mov	4[bp],al
+!BCC_EOS
+mov	al,4[bp]
+and	al,#$F0
+mov	-1[bp],al
+!BCC_EOS
+mov	al,4[bp]
+xor	ah,ah
+mov	cl,*4
+sar	ax,cl
+mov	-1[bp],al
+!BCC_EOS
+mov	al,4[bp]
+and	al,*$F
+mov	-2[bp],al
+!BCC_EOS
+mov	al,-1[bp]
+or	al,*$10
+mov	-1[bp],al
+!BCC_EOS
+mov	al,-2[bp]
+or	al,*0
+mov	-2[bp],al
+!BCC_EOS
+mov	ax,#$600
+push	ax
+mov	al,-1[bp]
+xor	ah,ah
+push	ax
+call	_outb
+add	sp,*4
+!BCC_EOS
+mov	ax,#$600
+push	ax
+mov	al,-2[bp]
+xor	ah,ah
+push	ax
+call	_outb
+add	sp,*4
+!BCC_EOS
+mov	sp,bp
+pop	bp
+ret
+_dis8x5_helper:
+!BCC_EOS
+!BCC_EOS
+push	bp
+mov	bp,sp
+dec	sp
+dec	sp
+mov	al,4[bp]
+test	al,al
+jne 	.C6
+.C7:
+mov	al,*$20
+mov	4[bp],al
+!BCC_EOS
+jmp .C8
+.C6:
+mov	al,4[bp]
+cmp	al,*$20
+jb  	.CA
+.CB:
+mov	al,4[bp]
+cmp	al,*$7E
+jbe 	.C9
+.CA:
+mov	al,*$3F
+mov	4[bp],al
+!BCC_EOS
+.C9:
+.C8:
+xor	al,al
+mov	-1[bp],al
+!BCC_EOS
+!BCC_EOS
+jmp .CE
+.CF:
+mov	ax,#$602
+push	ax
+mov	al,4[bp]
+xor	ah,ah
+add	ax,*-$20
+mov	dx,ax
+shl	ax,*1
+shl	ax,*1
+add	ax,dx
+mov	bx,ax
+mov	al,-1[bp]
+xor	ah,ah
+add	bx,ax
+mov	al,_ascii_font_8x5[bx]
+xor	ah,ah
+push	ax
+call	_outb
+add	sp,*4
+!BCC_EOS
+.CD:
+mov	al,-1[bp]
+inc	ax
+mov	-1[bp],al
+.CE:
+mov	al,-1[bp]
+cmp	al,*5
+jb 	.CF
+.D0:
+.CC:
+mov	sp,bp
+pop	bp
+ret
+! Register BX used in function dis8x5_helper
+export	_framebuffer_clear
+_framebuffer_clear:
+!BCC_EOS
+push	bp
+mov	bp,sp
+dec	sp
+dec	sp
+xor	al,al
+mov	-2[bp],al
+!BCC_EOS
+!BCC_EOS
+jmp .D3
+.D4:
+mov	al,-2[bp]
+xor	ah,ah
+push	ax
+call	_framebuffer_setline
+inc	sp
+inc	sp
+!BCC_EOS
+xor	ax,ax
+push	ax
+call	_framebuffer_setcolumn
+inc	sp
+inc	sp
+!BCC_EOS
+xor	al,al
+mov	-1[bp],al
+!BCC_EOS
+!BCC_EOS
+jmp .D7
+.D8:
+mov	ax,*$20
+push	ax
+call	_dis8x5_helper
+inc	sp
+inc	sp
+!BCC_EOS
+.D6:
+mov	al,-1[bp]
+inc	ax
+mov	-1[bp],al
+.D7:
+mov	al,-1[bp]
+cmp	al,*$19
+jb 	.D8
+.D9:
+.D5:
+.D2:
+mov	al,-2[bp]
+inc	ax
+mov	-2[bp],al
+.D3:
+mov	al,-2[bp]
+cmp	al,*8
+jb 	.D4
+.DA:
+.D1:
+xor	al,al
+mov	[_line_pos],al
+mov	[_line_num],al
+!BCC_EOS
+xor	al,al
+mov	[_line_count],al
+!BCC_EOS
+mov	ax,#$C8
+push	ax
+xor	ax,ax
+push	ax
+mov	bx,#_alpha_dram
+push	bx
+call	_memset
+add	sp,*6
+!BCC_EOS
+xor	ax,ax
+push	ax
+call	_framebuffer_setline
+inc	sp
+inc	sp
+!BCC_EOS
+xor	ax,ax
+push	ax
+call	_framebuffer_setcolumn
+inc	sp
+inc	sp
+!BCC_EOS
+mov	sp,bp
+pop	bp
+ret
+! Register BX used in function framebuffer_clear
+export	_framebuffer_dis8x5
+_framebuffer_dis8x5:
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+push	bp
+mov	bp,sp
+dec	sp
+dec	sp
+mov	al,4[bp]
+xor	ah,ah
+push	ax
+call	_framebuffer_setline
+inc	sp
+inc	sp
+!BCC_EOS
+mov	al,6[bp]
+xor	ah,ah
+push	ax
+call	_framebuffer_setcolumn
+inc	sp
+inc	sp
+!BCC_EOS
+mov	al,8[bp]
+xor	ah,ah
+push	ax
+call	_dis8x5_helper
+inc	sp
+inc	sp
+!BCC_EOS
+mov	sp,bp
+pop	bp
+ret
+_inc_line_num:
+push	bp
+mov	bp,sp
+xor	al,al
+mov	[_line_pos],al
+!BCC_EOS
+mov	al,[_line_count]
+inc	ax
+mov	[_line_count],al
+!BCC_EOS
+mov	al,[_line_num]
+cmp	al,*7
+jae 	.DB
+.DC:
+mov	al,[_line_num]
+inc	ax
+mov	[_line_num],al
+!BCC_EOS
+mov	al,[_line_num]
+xor	ah,ah
+push	ax
+call	_framebuffer_setline
+mov	sp,bp
+!BCC_EOS
+xor	ax,ax
+push	ax
+call	_framebuffer_setcolumn
+mov	sp,bp
+!BCC_EOS
+br 	.DD
+.DB:
+!BCC_EOS
+add	sp,*-4
+xor	al,al
+mov	-2[bp],al
+!BCC_EOS
+!BCC_EOS
+br 	.E0
+.E1:
+mov	al,-2[bp]
+xor	ah,ah
+push	ax
+call	_framebuffer_setline
+inc	sp
+inc	sp
+!BCC_EOS
+xor	ax,ax
+push	ax
+call	_framebuffer_setcolumn
+inc	sp
+inc	sp
+!BCC_EOS
+xor	al,al
+mov	-1[bp],al
+!BCC_EOS
+!BCC_EOS
+br 	.E4
+.E5:
+mov	al,-2[bp]
+xor	ah,ah
+mov	cx,*$19
+imul	cx
+mov	bx,ax
+mov	al,-1[bp]
+xor	ah,ah
+add	bx,ax
+mov	al,_alpha_dram[bx]
+mov	-3[bp],al
+!BCC_EOS
+mov	al,-2[bp]
+xor	ah,ah
+inc	ax
+mov	cx,*$19
+imul	cx
+mov	bx,ax
+mov	al,-1[bp]
+xor	ah,ah
+add	bx,ax
+mov	al,-2[bp]
+xor	ah,ah
+push	bx
+mov	cx,*$19
+imul	cx
+pop	bx
+mov	si,ax
+mov	al,-1[bp]
+xor	ah,ah
+add	si,ax
+mov	al,_alpha_dram[bx]
+mov	_alpha_dram[si],al
+!BCC_EOS
+mov	al,-2[bp]
+cmp	al,*6
+jne 	.E6
+.E7:
+xor	ax,ax
+jmp .E8
+.E6:
+mov	al,-3[bp]
+xor	ah,ah
+.E8:
+push	ax
+mov	al,-2[bp]
+xor	ah,ah
+inc	ax
+mov	cx,*$19
+imul	cx
+mov	bx,ax
+mov	al,-1[bp]
+xor	ah,ah
+add	bx,ax
+mov	ax,-6[bp]
+mov	_alpha_dram[bx],al
+inc	sp
+inc	sp
+!BCC_EOS
+mov	al,-2[bp]
+xor	ah,ah
+mov	cx,*$19
+imul	cx
+mov	bx,ax
+mov	al,-1[bp]
+xor	ah,ah
+add	bx,ax
+mov	al,_alpha_dram[bx]
+xor	ah,ah
+push	ax
+call	_dis8x5_helper
+inc	sp
+inc	sp
+!BCC_EOS
+.E3:
+mov	al,-1[bp]
+inc	ax
+mov	-1[bp],al
+.E4:
+mov	al,-1[bp]
+cmp	al,*$19
+blo 	.E5
+.E9:
+.E2:
+.DF:
+mov	al,-2[bp]
+inc	ax
+mov	-2[bp],al
+.E0:
+mov	al,-2[bp]
+cmp	al,*7
+blo 	.E1
+.EA:
+.DE:
+mov	ax,*7
+push	ax
+call	_framebuffer_setline
+inc	sp
+inc	sp
+!BCC_EOS
+xor	ax,ax
+push	ax
+call	_framebuffer_setcolumn
+inc	sp
+inc	sp
+!BCC_EOS
+xor	al,al
+mov	-1[bp],al
+!BCC_EOS
+!BCC_EOS
+jmp .ED
+.EE:
+xor	ax,ax
+push	ax
+call	_dis8x5_helper
+inc	sp
+inc	sp
+!BCC_EOS
+.EC:
+mov	al,-1[bp]
+inc	ax
+mov	-1[bp],al
+.ED:
+mov	al,-1[bp]
+cmp	al,*$19
+jb 	.EE
+.EF:
+.EB:
+xor	ax,ax
+push	ax
+call	_framebuffer_setcolumn
+inc	sp
+inc	sp
+!BCC_EOS
+mov	sp,bp
+.DD:
+pop	bp
+ret
+! Register BX used in function inc_line_num
+export	_get_line_count
+_get_line_count:
+push	bp
+mov	bp,sp
+mov	al,[_line_count]
+pop	bp
+ret
+!BCC_EOS
+_inc_line_pos:
+push	bp
+mov	bp,sp
+mov	al,[_line_pos]
+cmp	al,*$18
+jae 	.F0
+.F1:
+mov	al,[_line_pos]
+inc	ax
+mov	[_line_pos],al
+!BCC_EOS
+jmp .F2
+.F0:
+call	_inc_line_num
+!BCC_EOS
+xor	al,al
+mov	[_line_pos],al
+!BCC_EOS
+.F2:
+pop	bp
+ret
+export	_framebuffer_putch
+_framebuffer_putch:
+!BCC_EOS
+push	bp
+mov	bp,sp
+mov	al,4[bp]
+cmp	al,*$A
+jne 	.F3
+.F4:
+call	_inc_line_num
+!BCC_EOS
+br 	.F5
+.F3:
+mov	al,4[bp]
+cmp	al,*8
+jne 	.F6
+.F8:
+mov	al,[_line_pos]
+test	al,al
+je  	.F6
+.F7:
+mov	al,[_line_pos]
+dec	ax
+mov	[_line_pos],al
+!BCC_EOS
+mov	al,[_line_num]
+xor	ah,ah
+mov	cx,*$19
+imul	cx
+mov	bx,ax
+mov	al,[_line_pos]
+xor	ah,ah
+add	bx,ax
+xor	al,al
+mov	_alpha_dram[bx],al
+!BCC_EOS
+mov	al,[_line_pos]
+xor	ah,ah
+mov	dx,ax
+shl	ax,*1
+shl	ax,*1
+add	ax,dx
+push	ax
+call	_framebuffer_setcolumn
+mov	sp,bp
+!BCC_EOS
+xor	ax,ax
+push	ax
+call	_dis8x5_helper
+mov	sp,bp
+!BCC_EOS
+mov	al,[_line_pos]
+xor	ah,ah
+mov	dx,ax
+shl	ax,*1
+shl	ax,*1
+add	ax,dx
+push	ax
+call	_framebuffer_setcolumn
+mov	sp,bp
+!BCC_EOS
+jmp .F9
+.F6:
+mov	al,[_line_num]
+xor	ah,ah
+mov	cx,*$19
+imul	cx
+mov	bx,ax
+mov	al,[_line_pos]
+xor	ah,ah
+add	bx,ax
+mov	al,4[bp]
+mov	_alpha_dram[bx],al
+!BCC_EOS
+mov	al,4[bp]
+xor	ah,ah
+push	ax
+call	_dis8x5_helper
+mov	sp,bp
+!BCC_EOS
+call	_inc_line_pos
+!BCC_EOS
+.F9:
+.F5:
+pop	bp
+ret
+! Register BX used in function framebuffer_putch
+export	_framebuffer_print
+_framebuffer_print:
+!BCC_EOS
+push	bp
+mov	bp,sp
+jmp .FB
+.FC:
+mov	bx,4[bp]
+mov	al,[bx]
+xor	ah,ah
+push	ax
+call	_framebuffer_putch
+mov	sp,bp
+!BCC_EOS
+mov	bx,4[bp]
+inc	bx
+mov	4[bp],bx
+!BCC_EOS
+.FB:
+mov	bx,4[bp]
+mov	al,[bx]
+test	al,al
+jne	.FC
+.FD:
+.FA:
+pop	bp
+ret
+! Register BX used in function framebuffer_print
 !BCC_EOS
 !BCC_EOS
 !BCC_EOS
@@ -1776,26 +3164,26 @@ push	bp
 mov	bp,sp
 mov	al,[_putch_out_pos]
 cmp	al,[_putch_pos]
-jne 	.A4
-.A5:
+jne 	.FE
+.FF:
 xor	ax,ax
 pop	bp
 ret
 !BCC_EOS
-.A4:
+.FE:
 mov	ax,*2
 push	ax
 call	_inb
 mov	sp,bp
 and	al,*1
 test	al,al
-jne 	.A6
-.A7:
+jne 	.100
+.101:
 mov	ax,*1
 pop	bp
 ret
 !BCC_EOS
-.A6:
+.100:
 xor	ax,ax
 push	ax
 mov	al,[_putch_out_pos]
@@ -1816,7 +3204,33 @@ pop	bp
 ret
 !BCC_EOS
 ! Register BX used in function usart_putch_out
-_putch:
+export	_usart_getch
+_usart_getch:
+push	bp
+mov	bp,sp
+jmp .103
+.104:
+!BCC_EOS
+.103:
+mov	ax,*2
+push	ax
+call	_inb
+mov	sp,bp
+and	al,*2
+test	al,al
+je 	.104
+.105:
+.102:
+xor	ax,ax
+push	ax
+call	_inb
+mov	sp,bp
+xor	ah,ah
+shr	ax,*1
+pop	bp
+ret
+!BCC_EOS
+_usart_putch:
 !BCC_EOS
 push	bp
 mov	bp,sp
@@ -1834,37 +3248,37 @@ mov	al,4[bp]
 pop	bp
 ret
 !BCC_EOS
-! Register BX used in function putch
-export	_print_str
-_print_str:
+! Register BX used in function usart_putch
+export	_usart_print_str
+_usart_print_str:
 !BCC_EOS
 !BCC_EOS
 push	bp
 mov	bp,sp
 dec	sp
 dec	sp
-jmp .A9
-.AA:
+jmp .107
+.108:
 mov	bx,4[bp]
 mov	al,[bx]
 mov	-1[bp],al
 !BCC_EOS
 mov	al,-1[bp]
 cmp	al,*$A
-jne 	.AB
-.AC:
+jne 	.109
+.10A:
 mov	ax,*$D
 push	ax
-call	_putch
+call	_usart_putch
 inc	sp
 inc	sp
 !BCC_EOS
-.AB:
+.109:
 mov	bx,4[bp]
 mov	al,[bx]
 xor	ah,ah
 push	ax
-call	_putch
+call	_usart_putch
 inc	sp
 inc	sp
 !BCC_EOS
@@ -1872,25 +3286,25 @@ mov	bx,4[bp]
 inc	bx
 mov	4[bp],bx
 !BCC_EOS
-.A9:
+.107:
 mov	ax,4[bp]
 test	ax,ax
-je  	.AD
-.AE:
+je  	.10B
+.10C:
 mov	bx,4[bp]
 mov	al,[bx]
 test	al,al
-jne	.AA
-.AD:
-.A8:
+jne	.108
+.10B:
+.106:
 call	_usart_flush
 !BCC_EOS
 mov	sp,bp
 pop	bp
 ret
-! Register BX used in function print_str
-export	_print_ui
-_print_ui:
+! Register BX used in function usart_print_str
+export	_usart_print_ui
+_usart_print_ui:
 !BCC_EOS
 !BCC_EOS
 push	bp
@@ -1904,8 +3318,8 @@ xor	al,al
 mov	-5[bp],al
 !BCC_EOS
 dec	sp
-jmp .B0
-.B1:
+jmp .10E
+.10F:
 mov	ax,4[bp]
 mov	bx,-4[bp]
 call	idiv_u
@@ -1915,63 +3329,63 @@ mov	-1[bp],al
 !BCC_EOS
 mov	al,-1[bp]
 test	al,al
-jne 	.B3
-.B5:
+jne 	.111
+.113:
 mov	al,-5[bp]
 test	al,al
-jne 	.B3
-.B4:
+jne 	.111
+.112:
 mov	ax,-4[bp]
 cmp	ax,*1
-jne 	.B2
-.B3:
+jne 	.110
+.111:
 mov	al,-1[bp]
 xor	ah,ah
 add	ax,*$30
 push	ax
-call	_putch
+call	_usart_putch
 inc	sp
 inc	sp
 !BCC_EOS
 mov	al,*1
 mov	-5[bp],al
 !BCC_EOS
-.B2:
+.110:
 mov	ax,-4[bp]
 cmp	ax,*1
-jne 	.B6
-.B7:
-jmp .AF
+jne 	.114
+.115:
+jmp .10D
 !BCC_EOS
-.B6:
+.114:
 mov	ax,-4[bp]
 mov	bx,*$A
 call	idiv_u
 mov	-4[bp],ax
 !BCC_EOS
-.B0:
+.10E:
 mov	ax,-4[bp]
 cmp	ax,*1
-jae	.B1
-.B8:
-.AF:
+jae	.10F
+.116:
+.10D:
 mov	sp,bp
 pop	bp
 ret
-! Register BX used in function print_ui
+! Register BX used in function usart_print_ui
 export	_usart_flush
 _usart_flush:
 push	bp
 mov	bp,sp
-jmp .BA
-.BB:
+jmp .118
+.119:
 !BCC_EOS
-.BA:
+.118:
 call	_usart_putch_out
 test	ax,ax
-jne	.BB
-.BC:
-.B9:
+jne	.119
+.11A:
+.117:
 pop	bp
 ret
 export	_init_usart
@@ -2019,35 +3433,36 @@ ret
 !BCC_EOS
 .data
 .word 0
+.blkb	1
 _current_token:
 .word	0
 !BCC_EOS
 _keywords:
-.word	.BD+0
+.word	.11B+0
 .word	5
-.word	.BE+0
+.word	.11C+0
 .word	6
-.word	.BF+0
+.word	.11D+0
 .word	7
-.word	.C0+0
+.word	.11E+0
 .word	8
-.word	.C1+0
+.word	.11F+0
 .word	9
-.word	.C2+0
+.word	.120+0
 .word	$A
-.word	.C3+0
+.word	.121+0
 .word	$B
-.word	.C4+0
+.word	.122+0
 .word	$C
-.word	.C5+0
+.word	.123+0
 .word	$D
-.word	.C6+0
+.word	.124+0
 .word	$E
-.word	.C7+0
+.word	.125+0
 .word	$F
-.word	.C8+0
+.word	.126+0
 .word	$10
-.word	.C9+0
+.word	.127+0
 .word	$11
 .word	0
 .word	0
@@ -2059,181 +3474,181 @@ mov	bp,sp
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$A
-jne 	.CA
-.CB:
+jne 	.128
+.129:
 mov	ax,*$20
 pop	bp
 ret
 !BCC_EOS
-br 	.CC
-.CA:
+br 	.12A
+.128:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$2C
-jne 	.CD
-.CE:
+jne 	.12B
+.12C:
 mov	ax,*$12
 pop	bp
 ret
 !BCC_EOS
-br 	.CF
-.CD:
+br 	.12D
+.12B:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$3B
-jne 	.D0
-.D1:
+jne 	.12E
+.12F:
 mov	ax,*$13
 pop	bp
 ret
 !BCC_EOS
-br 	.D2
-.D0:
+br 	.130
+.12E:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$2B
-jne 	.D3
-.D4:
+jne 	.131
+.132:
 mov	ax,*$14
 pop	bp
 ret
 !BCC_EOS
-br 	.D5
-.D3:
+br 	.133
+.131:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$2D
-jne 	.D6
-.D7:
+jne 	.134
+.135:
 mov	ax,*$15
 pop	bp
 ret
 !BCC_EOS
-br 	.D8
-.D6:
+br 	.136
+.134:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$26
-jne 	.D9
-.DA:
+jne 	.137
+.138:
 mov	ax,*$16
 pop	bp
 ret
 !BCC_EOS
-br 	.DB
-.D9:
+br 	.139
+.137:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$7C
-jne 	.DC
-.DD:
+jne 	.13A
+.13B:
 mov	ax,*$17
 pop	bp
 ret
 !BCC_EOS
-br 	.DE
-.DC:
+br 	.13C
+.13A:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$2A
-jne 	.DF
-.E0:
+jne 	.13D
+.13E:
 mov	ax,*$18
 pop	bp
 ret
 !BCC_EOS
-br 	.E1
-.DF:
+br 	.13F
+.13D:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$2F
-jne 	.E2
-.E3:
+jne 	.140
+.141:
 mov	ax,*$19
 pop	bp
 ret
 !BCC_EOS
-jmp .E4
-.E2:
+jmp .142
+.140:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$25
-jne 	.E5
-.E6:
+jne 	.143
+.144:
 mov	ax,*$1A
 pop	bp
 ret
 !BCC_EOS
-jmp .E7
-.E5:
+jmp .145
+.143:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$28
-jne 	.E8
-.E9:
+jne 	.146
+.147:
 mov	ax,*$1B
 pop	bp
 ret
 !BCC_EOS
-jmp .EA
-.E8:
+jmp .148
+.146:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$29
-jne 	.EB
-.EC:
+jne 	.149
+.14A:
 mov	ax,*$1C
 pop	bp
 ret
 !BCC_EOS
-jmp .ED
-.EB:
+jmp .14B
+.149:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$3C
-jne 	.EE
-.EF:
+jne 	.14C
+.14D:
 mov	ax,*$1D
 pop	bp
 ret
 !BCC_EOS
-jmp .F0
-.EE:
+jmp .14E
+.14C:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$3E
-jne 	.F1
-.F2:
+jne 	.14F
+.150:
 mov	ax,*$1E
 pop	bp
 ret
 !BCC_EOS
-jmp .F3
-.F1:
+jmp .151
+.14F:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$3D
-jne 	.F4
-.F5:
+jne 	.152
+.153:
 mov	ax,*$1F
 pop	bp
 ret
 !BCC_EOS
-.F4:
-.F3:
-.F0:
-.ED:
-.EA:
-.E7:
-.E4:
-.E1:
-.DE:
-.DB:
-.D8:
-.D5:
-.D2:
-.CF:
-.CC:
+.152:
+.151:
+.14E:
+.14B:
+.148:
+.145:
+.142:
+.13F:
+.13C:
+.139:
+.136:
+.133:
+.130:
+.12D:
+.12A:
 xor	ax,ax
 pop	bp
 ret
@@ -2246,7 +3661,7 @@ push	bp
 mov	bp,sp
 add	sp,*-4
 push	[_ptr]
-mov	bx,#.F6
+mov	bx,#.154
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
@@ -2254,14 +3669,14 @@ add	sp,*4
 mov	bx,[_ptr]
 mov	al,[bx]
 test	al,al
-jne 	.F7
-.F8:
+jne 	.155
+.156:
 mov	ax,*1
 mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.F7:
+.155:
 mov	bx,[_ptr]
 mov	al,[bx]
 xor	ah,ah
@@ -2270,14 +3685,14 @@ mov	bx,ax
 mov	al,___ctype[bx]
 and	al,*1
 test	al,al
-beq 	.F9
-.FA:
+beq 	.157
+.158:
 xor	ax,ax
 mov	-4[bp],ax
 !BCC_EOS
 !BCC_EOS
-jmp .FD
-.FE:
+jmp .15B
+.15C:
 mov	ax,-4[bp]
 add	ax,[_ptr]
 mov	bx,ax
@@ -2288,12 +3703,12 @@ mov	bx,ax
 mov	al,___ctype[bx]
 and	al,*1
 test	al,al
-jne 	.FF
-.100:
+jne 	.15D
+.15E:
 mov	ax,-4[bp]
 test	ax,ax
-jle 	.101
-.102:
+jle 	.15F
+.160:
 mov	ax,-4[bp]
 add	ax,[_ptr]
 mov	[_nextptr],ax
@@ -2303,9 +3718,9 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-jmp .103
-.101:
-mov	bx,#.104
+jmp .161
+.15F:
+mov	bx,#.162
 push	bx
 call	_DEBUG_PRINTF
 inc	sp
@@ -2316,8 +3731,8 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.103:
-.FF:
+.161:
+.15D:
 mov	ax,-4[bp]
 add	ax,[_ptr]
 mov	bx,ax
@@ -2328,9 +3743,9 @@ mov	bx,ax
 mov	al,___ctype[bx]
 and	al,*1
 test	al,al
-jne 	.105
-.106:
-mov	bx,#.107
+jne 	.163
+.164:
+mov	bx,#.165
 push	bx
 call	_DEBUG_PRINTF
 inc	sp
@@ -2341,18 +3756,18 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.105:
-.FC:
+.163:
+.15A:
 mov	ax,-4[bp]
 inc	ax
 mov	-4[bp],ax
-.FD:
+.15B:
 mov	ax,-4[bp]
 cmp	ax,*5
-jl 	.FE
-.108:
-.FB:
-mov	bx,#.109
+jl 	.15C
+.166:
+.159:
+mov	bx,#.167
 push	bx
 call	_DEBUG_PRINTF
 inc	sp
@@ -2363,12 +3778,12 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-br 	.10A
-.F9:
+br 	.168
+.157:
 call	_singlechar
 test	ax,ax
-je  	.10B
-.10C:
+je  	.169
+.16A:
 mov	bx,[_ptr]
 inc	bx
 mov	[_nextptr],bx
@@ -2378,29 +3793,29 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-br 	.10D
-.10B:
+br 	.16B
+.169:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$22
-jne 	.10E
-.10F:
+jne 	.16C
+.16D:
 mov	bx,[_ptr]
 mov	[_nextptr],bx
 !BCC_EOS
-.112:
+.170:
 mov	bx,[_nextptr]
 inc	bx
 mov	[_nextptr],bx
 !BCC_EOS
-.111:
+.16F:
 mov	bx,[_nextptr]
 mov	al,[bx]
 cmp	al,*$22
-jne	.112
-.113:
+jne	.170
+.171:
 !BCC_EOS
-.110:
+.16E:
 mov	bx,[_nextptr]
 inc	bx
 mov	[_nextptr],bx
@@ -2410,14 +3825,14 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-jmp .114
-.10E:
+jmp .172
+.16C:
 mov	bx,#_keywords
 mov	-2[bp],bx
 !BCC_EOS
 !BCC_EOS
-jmp .117
-.118:
+jmp .175
+.176:
 mov	bx,-2[bp]
 push	[bx]
 call	_strlen
@@ -2432,8 +3847,8 @@ push	[_ptr]
 call	_strncmp
 add	sp,*8
 test	ax,ax
-jne 	.119
-.11A:
+jne 	.177
+.178:
 mov	bx,-2[bp]
 push	[bx]
 call	_strlen
@@ -2449,31 +3864,31 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.119:
-.116:
+.177:
+.174:
 mov	bx,-2[bp]
 add	bx,*4
 mov	-2[bp],bx
-.117:
+.175:
 mov	bx,-2[bp]
 mov	ax,[bx]
 test	ax,ax
-jne	.118
-.11B:
-.115:
-.114:
-.10D:
-.10A:
+jne	.176
+.179:
+.173:
+.172:
+.16B:
+.168:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$61
-jb  	.11C
-.11E:
+jb  	.17A
+.17C:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$7A
-ja  	.11C
-.11D:
+ja  	.17A
+.17B:
 mov	bx,[_ptr]
 inc	bx
 mov	[_nextptr],bx
@@ -2483,7 +3898,7 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.11C:
+.17A:
 xor	ax,ax
 mov	sp,bp
 pop	bp
@@ -2518,14 +3933,14 @@ push	bp
 mov	bp,sp
 call	_tokenizer_finished
 test	ax,ax
-je  	.11F
-.120:
+je  	.17D
+.17E:
 pop	bp
 ret
 !BCC_EOS
-.11F:
+.17D:
 push	[_nextptr]
-mov	bx,#.121
+mov	bx,#.17F
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
@@ -2533,25 +3948,25 @@ mov	sp,bp
 mov	bx,[_nextptr]
 mov	[_ptr],bx
 !BCC_EOS
-jmp .123
-.124:
+jmp .181
+.182:
 mov	bx,[_ptr]
 inc	bx
 mov	[_ptr],bx
 !BCC_EOS
-.123:
+.181:
 mov	bx,[_ptr]
 mov	al,[bx]
 cmp	al,*$20
-je 	.124
-.125:
-.122:
+je 	.182
+.183:
+.180:
 call	_get_next_token
 mov	[_current_token],ax
 !BCC_EOS
 push	[_current_token]
 push	[_ptr]
-mov	bx,#.126
+mov	bx,#.184
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
@@ -2581,13 +3996,13 @@ mov	bp,sp
 add	sp,*-4
 call	_tokenizer_token
 cmp	ax,*3
-je  	.127
-.128:
+je  	.185
+.186:
 mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.127:
+.185:
 mov	ax,*$22
 push	ax
 mov	bx,[_ptr]
@@ -2599,13 +4014,13 @@ mov	-2[bp],ax
 !BCC_EOS
 mov	ax,-2[bp]
 test	ax,ax
-jne 	.129
-.12A:
+jne 	.187
+.188:
 mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.129:
+.187:
 mov	ax,-2[bp]
 sub	ax,[_ptr]
 dec	ax
@@ -2613,12 +4028,12 @@ mov	-4[bp],ax
 !BCC_EOS
 mov	ax,6[bp]
 cmp	ax,-4[bp]
-jge 	.12B
-.12C:
+jge 	.189
+.18A:
 mov	ax,6[bp]
 mov	-4[bp],ax
 !BCC_EOS
-.12B:
+.189:
 push	-4[bp]
 mov	bx,[_ptr]
 inc	bx
@@ -2642,7 +4057,7 @@ _tokenizer_error_print:
 push	bp
 mov	bp,sp
 push	[_ptr]
-mov	bx,#.12D
+mov	bx,#.18B
 push	bx
 call	_printf
 mov	sp,bp
@@ -2657,17 +4072,17 @@ mov	bp,sp
 mov	bx,[_ptr]
 mov	al,[bx]
 test	al,al
-je  	.12F
-.130:
+je  	.18D
+.18E:
 mov	ax,[_current_token]
 cmp	ax,*1
-jne 	.12E
-.12F:
+jne 	.18C
+.18D:
 mov	al,*1
-jmp	.131
-.12E:
+jmp	.18F
+.18C:
 xor	al,al
-.131:
+.18F:
 xor	ah,ah
 pop	bp
 ret
@@ -2686,58 +4101,362 @@ ret
 !BCC_EOS
 ! Register BX used in function tokenizer_variable_num
 !BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
+!BCC_EOS
 .data
 .word 0
-export	_cur_ptr
-_cur_ptr:
-.word	0
-!BCC_EOS
-export	_ptr_max
-_ptr_max:
-.word	0
+export	_prog_codes
+_prog_codes:
+.word	.190+0
 !BCC_EOS
 .text
+_cmd_list:
+push	bp
+mov	bp,sp
+push	[_prog_codes]
+mov	bx,#.191
+push	bx
+call	_printf
+mov	sp,bp
+!BCC_EOS
+xor	ax,ax
+pop	bp
+ret
+!BCC_EOS
+! Register BX used in function cmd_list
+_cmd_edit:
+!BCC_EOS
+push	bp
+mov	bp,sp
+add	sp,*-4
+mov	bx,[_prog_codes]
+mov	-4[bp],bx
+!BCC_EOS
+add	sp,*-4
+push	[_prog_codes]
+call	_strlen
+mov	bx,dx
+inc	sp
+inc	sp
+mov	-8[bp],ax
+mov	-6[bp],bx
+!BCC_EOS
+!BCC_EOS
+add	sp,*-$21
+xor	al,al
+mov	-$29[bp],al
+!BCC_EOS
+dec	sp
+!BCC_EOS
+!BCC_EOS
+.194:
+call	_framebuffer_clear
+!BCC_EOS
+mov	al,-$29[bp]
+xor	ah,ah
+inc	ax
+push	ax
+mov	bx,#.195
+push	bx
+call	_printf
+add	sp,*4
+!BCC_EOS
+mov	bx,#.196
+push	bx
+call	_printf
+inc	sp
+inc	sp
+!BCC_EOS
+mov	al,-$29[bp]
+cmp	al,*$10
+jb  	.197
+.198:
+mov	bx,#.199
+push	bx
+call	_printf
+inc	sp
+inc	sp
+!BCC_EOS
+add	sp,#..FFFD+$2C
+jmp .FFFD
+!BCC_EOS
+.197:
+mov	al,-$29[bp]
+inc	ax
+mov	-$29[bp],al
+dec	ax
+xor	ah,ah
+shl	ax,*1
+mov	bx,bp
+add	bx,ax
+mov	si,-4[bp]
+mov	-$28[bx],si
+!BCC_EOS
+jmp .19B
+.19C:
+mov	bx,-4[bp]
+mov	al,[bx]
+xor	ah,ah
+push	ax
+call	_framebuffer_putch
+inc	sp
+inc	sp
+!BCC_EOS
+mov	bx,-4[bp]
+inc	bx
+mov	-4[bp],bx
+!BCC_EOS
+mov	al,[_line_count]
+cmp	al,*6
+jbe 	.19D
+.19E:
+jmp .19A
+!BCC_EOS
+.19D:
+.19B:
+mov	bx,-4[bp]
+mov	al,[bx]
+test	al,al
+jne	.19C
+.19F:
+.19A:
+.FFFD:
+..FFFD	=	-$2C
+call	_usart_getch
+mov	-2[bp],al
+!BCC_EOS
+mov	al,-2[bp]
+cmp	al,*$E
+jne 	.1A0
+.1A1:
+mov	ax,*2
+xor	bx,bx
+push	bx
+push	ax
+mov	ax,-8[bp]
+mov	bx,-6[bp]
+lea	di,-$2E[bp]
+call	lsubul
+add	sp,*4
+push	bx
+push	ax
+mov	ax,-4[bp]
+sub	ax,[_prog_codes]
+cwd
+mov	bx,dx
+lea	di,-$2E[bp]
+call	lcmpul
+lea	sp,-$2A[bp]
+jb  	.1A2
+.1A3:
+add	sp,#..FFFD+$2C
+br 	.FFFD
+!BCC_EOS
+.1A2:
+jmp .1A5
+.1A0:
+mov	al,-2[bp]
+cmp	al,*$10
+jne 	.1A6
+.1A7:
+mov	al,-$29[bp]
+cmp	al,*2
+jb  	.1A8
+.1A9:
+mov	al,-$29[bp]
+dec	ax
+mov	-$29[bp],al
+!BCC_EOS
+mov	al,-$29[bp]
+dec	ax
+mov	-$29[bp],al
+xor	ah,ah
+shl	ax,*1
+mov	bx,bp
+add	bx,ax
+mov	bx,-$28[bx]
+mov	-4[bp],bx
+!BCC_EOS
+jmp .1AA
+.1A8:
+add	sp,#..FFFD+$2C
+br 	.FFFD
+!BCC_EOS
+.1AA:
+jmp .1AB
+.1A6:
+mov	al,-2[bp]
+cmp	al,*$11
+jne 	.1AC
+.1AD:
+call	_framebuffer_clear
+!BCC_EOS
+jmp .192
+!BCC_EOS
+jmp .1AE
+.1AC:
+mov	al,-2[bp]
+cmp	al,*$13
+jne 	.1AF
+.1B0:
+add	sp,#..FFFD+$2C
+br 	.FFFD
+!BCC_EOS
+jmp .1B1
+.1AF:
+add	sp,#..FFFD+$2C
+br 	.FFFD
+!BCC_EOS
+.1B1:
+.1AE:
+.1AB:
+.1A5:
+.193:
+br 	.194
+.192:
+xor	ax,ax
+mov	sp,bp
+pop	bp
+ret
+!BCC_EOS
+! Register BX used in function cmd_edit
+_cmd_run:
+push	bp
+mov	bp,sp
+push	[_prog_codes]
+call	_ubasic_init
+mov	sp,bp
+!BCC_EOS
+call	_ubasic_run
+!BCC_EOS
+.1B4:
+call	_ubasic_run
+!BCC_EOS
+.1B3:
+call	_ubasic_finished
+test	ax,ax
+je 	.1B4
+.1B5:
+!BCC_EOS
+.1B2:
+xor	ax,ax
+pop	bp
+ret
+!BCC_EOS
 export	_init_terminal
 _init_terminal:
 push	bp
 mov	bp,sp
-call	_init_usart
+mov	bx,#.1B6
+push	bx
+call	_printf
+mov	sp,bp
+!BCC_EOS
+xor	al,al
+mov	[_cmd_status],al
 !BCC_EOS
 pop	bp
 ret
-export	_read_str
-_read_str:
-!BCC_EOS
-!BCC_EOS
+! Register BX used in function init_terminal
+export	_run_terminal
+_run_terminal:
 !BCC_EOS
 push	bp
 mov	bp,sp
 dec	sp
 dec	sp
-mov	ax,6[bp]
+mov	al,[_cmd_status]
+jmp .1B9
+.1BA:
+mov	bx,#.1BB
+push	bx
+call	_printf
+inc	sp
+inc	sp
+!BCC_EOS
+jmp .1B7
+!BCC_EOS
+.1BC:
+mov	bx,#.1BD
+push	bx
+call	_printf
+inc	sp
+inc	sp
+!BCC_EOS
+jmp .1B7
+.1B9:
+sub	al,*1
+je 	.1BA
+jmp	.1BC
+.1B7:
+..FFFC	=	-4
+mov	bx,#.1BE
+push	bx
+call	_printf
+inc	sp
+inc	sp
+!BCC_EOS
+mov	ax,*$7F
+push	ax
+mov	bx,#_inp_buff
+push	bx
+call	_gets
+add	sp,*4
+!BCC_EOS
+mov	bx,#.1C0
+push	bx
+mov	bx,#_inp_buff
+push	bx
+call	_strcasecmp
+add	sp,*4
 test	ax,ax
-jg  	.132
-.133:
+jne 	.1BF
+.1C1:
+call	_cmd_list
+mov	[_cmd_status],al
+!BCC_EOS
+jmp .1C2
+.1BF:
+mov	bx,#.1C4
+push	bx
+mov	bx,#_inp_buff
+push	bx
+call	_strcasecmp
+add	sp,*4
+test	ax,ax
+jne 	.1C3
+.1C5:
+call	_cmd_run
+mov	[_cmd_status],al
+!BCC_EOS
+jmp .1C6
+.1C3:
+mov	bx,#.1C8
+push	bx
+mov	bx,#_inp_buff
+push	bx
+call	_strcasecmp
+add	sp,*4
+test	ax,ax
+jne 	.1C7
+.1C9:
+call	_cmd_edit
+mov	[_cmd_status],al
+!BCC_EOS
+jmp .1CA
+.1C7:
+mov	al,*1
+mov	[_cmd_status],al
+!BCC_EOS
+.1CA:
+.1C6:
+.1C2:
 mov	sp,bp
 pop	bp
 ret
-!BCC_EOS
-.132:
-mov	bx,4[bp]
-mov	[_cur_ptr],bx
-!BCC_EOS
-mov	ax,6[bp]
-add	ax,[_cur_ptr]
-mov	[_ptr_max],ax
-!BCC_EOS
-mov	bx,4[bp]
-xor	al,al
-mov	[bx],al
-!BCC_EOS
-mov	sp,bp
-pop	bp
-ret
-! Register BX used in function read_str
+! Register BX used in function run_terminal
 !BCC_EOS
 !BCC_EOS
 !BCC_EOS
@@ -2781,12 +4500,12 @@ push	bp
 mov	bp,sp
 call	_tokenizer_token
 cmp	ax,4[bp]
-je  	.134
-.135:
+je  	.1CB
+.1CC:
 call	_tokenizer_token
 push	ax
 push	4[bp]
-mov	bx,#.136
+mov	bx,#.1CD
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
@@ -2798,9 +4517,9 @@ push	ax
 call	_exit
 mov	sp,bp
 !BCC_EOS
-.134:
+.1CB:
 push	4[bp]
-mov	bx,#.137
+mov	bx,#.1CE
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
@@ -2823,7 +4542,7 @@ mov	bx,ax
 mov	al,_variables[bx]
 xor	ah,ah
 push	ax
-mov	bx,#.138
+mov	bx,#.1CF
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*6
@@ -2855,19 +4574,19 @@ dec	sp
 dec	sp
 call	_tokenizer_token
 push	ax
-mov	bx,#.139
+mov	bx,#.1D0
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
 !BCC_EOS
 call	_tokenizer_token
-jmp .13C
-.13D:
+jmp .1D3
+.1D4:
 call	_tokenizer_num
 mov	-2[bp],ax
 !BCC_EOS
 push	-2[bp]
-mov	bx,#.13E
+mov	bx,#.1D5
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
@@ -2878,9 +4597,9 @@ call	_accept
 inc	sp
 inc	sp
 !BCC_EOS
-jmp .13A
+jmp .1D1
 !BCC_EOS
-.13F:
+.1D6:
 mov	ax,*$1B
 push	ax
 call	_accept
@@ -2896,23 +4615,23 @@ call	_accept
 inc	sp
 inc	sp
 !BCC_EOS
-jmp .13A
+jmp .1D1
 !BCC_EOS
-.140:
+.1D7:
 call	_varfactor
 mov	-2[bp],ax
 !BCC_EOS
-jmp .13A
+jmp .1D1
 !BCC_EOS
-jmp .13A
-.13C:
+jmp .1D1
+.1D3:
 sub	ax,*2
-je 	.13D
+je 	.1D4
 sub	ax,*$19
-je 	.13F
-jmp	.140
-.13A:
-..FFFD	=	-4
+je 	.1D6
+jmp	.1D7
+.1D1:
+..FFFB	=	-4
 mov	ax,-2[bp]
 mov	sp,bp
 pop	bp
@@ -2932,13 +4651,13 @@ call	_tokenizer_token
 mov	-6[bp],ax
 !BCC_EOS
 push	-6[bp]
-mov	bx,#.141
+mov	bx,#.1D8
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
 !BCC_EOS
-jmp .143
-.144:
+jmp .1DA
+.1DB:
 call	_tokenizer_next
 !BCC_EOS
 call	_factor
@@ -2947,67 +4666,67 @@ mov	-4[bp],ax
 push	-4[bp]
 push	-6[bp]
 push	-2[bp]
-mov	bx,#.145
+mov	bx,#.1DC
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*8
 !BCC_EOS
 mov	ax,-6[bp]
-jmp .148
-.149:
+jmp .1DF
+.1E0:
 mov	ax,-2[bp]
 mov	cx,-4[bp]
 imul	cx
 mov	-2[bp],ax
 !BCC_EOS
-jmp .146
+jmp .1DD
 !BCC_EOS
-.14A:
+.1E1:
 mov	ax,-2[bp]
 mov	bx,-4[bp]
 cwd
 idiv	bx
 mov	-2[bp],ax
 !BCC_EOS
-jmp .146
+jmp .1DD
 !BCC_EOS
-.14B:
+.1E2:
 mov	ax,-2[bp]
 mov	bx,-4[bp]
 call	imod
 mov	-2[bp],ax
 !BCC_EOS
-jmp .146
+jmp .1DD
 !BCC_EOS
-jmp .146
-.148:
+jmp .1DD
+.1DF:
 sub	ax,*$18
-je 	.149
+je 	.1E0
 sub	ax,*1
-je 	.14A
+je 	.1E1
 sub	ax,*1
-je 	.14B
-.146:
-..FFFC	=	-8
+je 	.1E2
+.1DD:
+..FFFA	=	-8
 call	_tokenizer_token
 mov	-6[bp],ax
 !BCC_EOS
-.143:
+.1DA:
 mov	ax,-6[bp]
 cmp	ax,*$18
-je 	.144
-.14E:
+je 	.1DB
+.1E5:
 mov	ax,-6[bp]
 cmp	ax,*$19
-je 	.144
-.14D:
+je 	.1DB
+.1E4:
 mov	ax,-6[bp]
 cmp	ax,*$1A
-je 	.144
-.14C:
-.142:
+je 	.1DB
+.1E3:
+.1D9:
 push	-2[bp]
-mov	bx,#.14F
+mov	bx,#.1E6
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
@@ -3031,13 +4750,13 @@ call	_tokenizer_token
 mov	-6[bp],ax
 !BCC_EOS
 push	-6[bp]
-mov	bx,#.150
+mov	bx,#.1E7
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
 !BCC_EOS
-jmp .152
-.153:
+jmp .1E9
+.1EA:
 call	_tokenizer_next
 !BCC_EOS
 call	_term
@@ -3046,76 +4765,76 @@ mov	-4[bp],ax
 push	-4[bp]
 push	-6[bp]
 push	-2[bp]
-mov	bx,#.154
+mov	bx,#.1EB
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*8
 !BCC_EOS
 mov	ax,-6[bp]
-jmp .157
-.158:
+jmp .1EE
+.1EF:
 mov	ax,-2[bp]
 add	ax,-4[bp]
 mov	-2[bp],ax
 !BCC_EOS
-jmp .155
+jmp .1EC
 !BCC_EOS
-.159:
+.1F0:
 mov	ax,-2[bp]
 sub	ax,-4[bp]
 mov	-2[bp],ax
 !BCC_EOS
-jmp .155
+jmp .1EC
 !BCC_EOS
-.15A:
+.1F1:
 mov	ax,-2[bp]
 and	ax,-4[bp]
 mov	-2[bp],ax
 !BCC_EOS
-jmp .155
+jmp .1EC
 !BCC_EOS
-.15B:
+.1F2:
 mov	ax,-2[bp]
 or	ax,-4[bp]
 mov	-2[bp],ax
 !BCC_EOS
-jmp .155
+jmp .1EC
 !BCC_EOS
-jmp .155
-.157:
+jmp .1EC
+.1EE:
 sub	ax,*$14
-je 	.158
+je 	.1EF
 sub	ax,*1
-je 	.159
+je 	.1F0
 sub	ax,*1
-je 	.15A
+je 	.1F1
 sub	ax,*1
-je 	.15B
-.155:
-..FFFB	=	-8
+je 	.1F2
+.1EC:
+..FFF9	=	-8
 call	_tokenizer_token
 mov	-6[bp],ax
 !BCC_EOS
-.152:
+.1E9:
 mov	ax,-6[bp]
 cmp	ax,*$14
-je 	.153
-.15F:
+je 	.1EA
+.1F6:
 mov	ax,-6[bp]
 cmp	ax,*$15
-je 	.153
-.15E:
+je 	.1EA
+.1F5:
 mov	ax,-6[bp]
 cmp	ax,*$16
-beq 	.153
-.15D:
+beq 	.1EA
+.1F4:
 mov	ax,-6[bp]
 cmp	ax,*$17
-beq 	.153
-.15C:
-.151:
+beq 	.1EA
+.1F3:
+.1E8:
 push	-2[bp]
-mov	bx,#.160
+mov	bx,#.1F7
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
@@ -3139,13 +4858,13 @@ call	_tokenizer_token
 mov	-6[bp],ax
 !BCC_EOS
 push	-6[bp]
-mov	bx,#.161
+mov	bx,#.1F8
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
 !BCC_EOS
-jmp .163
-.164:
+jmp .1FA
+.1FB:
 call	_tokenizer_next
 !BCC_EOS
 call	_expr
@@ -3154,82 +4873,82 @@ mov	-4[bp],ax
 push	-4[bp]
 push	-6[bp]
 push	-2[bp]
-mov	bx,#.165
+mov	bx,#.1FC
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*8
 !BCC_EOS
 mov	ax,-6[bp]
-jmp .168
-.169:
+jmp .1FF
+.200:
 mov	ax,-2[bp]
 cmp	ax,-4[bp]
-jge	.16A
+jge	.201
 mov	al,*1
-jmp	.16B
-.16A:
+jmp	.202
+.201:
 xor	al,al
-.16B:
+.202:
 xor	ah,ah
 mov	-2[bp],ax
 !BCC_EOS
-jmp .166
+jmp .1FD
 !BCC_EOS
-.16C:
+.203:
 mov	ax,-2[bp]
 cmp	ax,-4[bp]
-jle	.16D
+jle	.204
 mov	al,*1
-jmp	.16E
-.16D:
+jmp	.205
+.204:
 xor	al,al
-.16E:
+.205:
 xor	ah,ah
 mov	-2[bp],ax
 !BCC_EOS
-jmp .166
+jmp .1FD
 !BCC_EOS
-.16F:
+.206:
 mov	ax,-2[bp]
 cmp	ax,-4[bp]
-jne	.170
+jne	.207
 mov	al,*1
-jmp	.171
-.170:
+jmp	.208
+.207:
 xor	al,al
-.171:
+.208:
 xor	ah,ah
 mov	-2[bp],ax
 !BCC_EOS
-jmp .166
+jmp .1FD
 !BCC_EOS
-jmp .166
-.168:
+jmp .1FD
+.1FF:
 sub	ax,*$1D
-je 	.169
+je 	.200
 sub	ax,*1
-je 	.16C
+je 	.203
 sub	ax,*1
-je 	.16F
-.166:
-..FFFA	=	-8
+je 	.206
+.1FD:
+..FFF8	=	-8
 call	_tokenizer_token
 mov	-6[bp],ax
 !BCC_EOS
-.163:
+.1FA:
 mov	ax,-6[bp]
 cmp	ax,*$1D
-je 	.164
-.174:
+je 	.1FB
+.20B:
 mov	ax,-6[bp]
 cmp	ax,*$1E
-beq 	.164
-.173:
+beq 	.1FB
+.20A:
 mov	ax,-6[bp]
 cmp	ax,*$1F
-beq 	.164
-.172:
-.162:
+beq 	.1FB
+.209:
+.1F9:
 mov	ax,-2[bp]
 mov	sp,bp
 pop	bp
@@ -3244,50 +4963,50 @@ push	[_program_ptr]
 call	_tokenizer_init
 mov	sp,bp
 !BCC_EOS
-jmp .176
-.177:
-.17A:
-.17D:
+jmp .20D
+.20E:
+.211:
+.214:
 call	_tokenizer_next
 !BCC_EOS
-.17C:
+.213:
 call	_tokenizer_token
 cmp	ax,*$20
-je  	.17E
-.17F:
+je  	.215
+.216:
 call	_tokenizer_token
 cmp	ax,*1
-jne	.17D
-.17E:
+jne	.214
+.215:
 !BCC_EOS
-.17B:
+.212:
 call	_tokenizer_token
 cmp	ax,*$20
-jne 	.180
-.181:
+jne 	.217
+.218:
 call	_tokenizer_next
 !BCC_EOS
-.180:
-.179:
+.217:
+.210:
 call	_tokenizer_token
 cmp	ax,*2
-jne	.17A
-.182:
+jne	.211
+.219:
 !BCC_EOS
-.178:
+.20F:
 call	_tokenizer_num
 push	ax
-mov	bx,#.183
+mov	bx,#.21A
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
 !BCC_EOS
-.176:
+.20D:
 call	_tokenizer_num
 cmp	ax,4[bp]
-jne	.177
-.184:
-.175:
+jne	.20E
+.21B:
+.20C:
 pop	bp
 ret
 ! Register BX used in function jump_linenum
@@ -3314,16 +5033,16 @@ push	ax
 call	_accept
 mov	sp,bp
 !BCC_EOS
-.187:
-mov	bx,#.188
+.21E:
+mov	bx,#.21F
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
 !BCC_EOS
 call	_tokenizer_token
 cmp	ax,*3
-jne 	.189
-.18A:
+jne 	.220
+.221:
 mov	ax,*$28
 push	ax
 mov	bx,#_string
@@ -3333,74 +5052,76 @@ mov	sp,bp
 !BCC_EOS
 mov	bx,#_string
 push	bx
-call	_print_str
+mov	bx,#.222
+push	bx
+call	_printf
 mov	sp,bp
 !BCC_EOS
 call	_tokenizer_next
 !BCC_EOS
-jmp .18B
-.189:
+jmp .223
+.220:
 call	_tokenizer_token
 cmp	ax,*$12
-jne 	.18C
-.18D:
-mov	bx,#.18E
+jne 	.224
+.225:
+mov	bx,#.226
 push	bx
-call	_print_str
+call	_printf
 mov	sp,bp
 !BCC_EOS
 call	_tokenizer_next
 !BCC_EOS
-jmp .18F
-.18C:
+jmp .227
+.224:
 call	_tokenizer_token
 cmp	ax,*$13
-jne 	.190
-.191:
+jne 	.228
+.229:
 call	_tokenizer_next
 !BCC_EOS
-jmp .192
-.190:
+jmp .22A
+.228:
 call	_tokenizer_token
 cmp	ax,*4
-je  	.194
-.195:
+je  	.22C
+.22D:
 call	_tokenizer_token
 cmp	ax,*2
-jne 	.193
-.194:
+jne 	.22B
+.22C:
 call	_expr
 push	ax
-call	_print_ui
+mov	bx,#.22E
+push	bx
+call	_printf
 mov	sp,bp
 !BCC_EOS
-jmp .196
-.193:
-br 	.185
+jmp .22F
+.22B:
+jmp .21C
 !BCC_EOS
-.196:
-.192:
-.18F:
-.18B:
-.186:
+.22F:
+.22A:
+.227:
+.223:
+.21D:
 call	_tokenizer_token
 cmp	ax,*$20
-je  	.197
-.198:
+je  	.230
+.231:
 call	_tokenizer_token
 cmp	ax,*1
-bne 	.187
-.197:
+bne 	.21E
+.230:
 !BCC_EOS
-.185:
-mov	bx,#.199
+.21C:
+mov	bx,#.232
 push	bx
-call	_print_str
+call	_printf
 mov	sp,bp
 !BCC_EOS
-call	_usart_flush
-!BCC_EOS
-mov	bx,#.19A
+mov	bx,#.233
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
@@ -3426,7 +5147,7 @@ call	_relation
 mov	-2[bp],ax
 !BCC_EOS
 push	-2[bp]
-mov	bx,#.19B
+mov	bx,#.234
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
@@ -3439,49 +5160,49 @@ inc	sp
 !BCC_EOS
 mov	ax,-2[bp]
 test	ax,ax
-je  	.19C
-.19D:
+je  	.235
+.236:
 call	_statement
 !BCC_EOS
-jmp .19E
-.19C:
-.1A1:
+jmp .237
+.235:
+.23A:
 call	_tokenizer_next
 !BCC_EOS
-.1A0:
+.239:
 call	_tokenizer_token
 cmp	ax,*9
-je  	.1A2
-.1A4:
+je  	.23B
+.23D:
 call	_tokenizer_token
 cmp	ax,*$20
-je  	.1A2
-.1A3:
+je  	.23B
+.23C:
 call	_tokenizer_token
 cmp	ax,*1
-jne	.1A1
-.1A2:
+jne	.23A
+.23B:
 !BCC_EOS
-.19F:
+.238:
 call	_tokenizer_token
 cmp	ax,*9
-jne 	.1A5
-.1A6:
+jne 	.23E
+.23F:
 call	_tokenizer_next
 !BCC_EOS
 call	_statement
 !BCC_EOS
-jmp .1A7
-.1A5:
+jmp .240
+.23E:
 call	_tokenizer_token
 cmp	ax,*$20
-jne 	.1A8
-.1A9:
+jne 	.241
+.242:
 call	_tokenizer_next
 !BCC_EOS
-.1A8:
-.1A7:
-.19E:
+.241:
+.240:
+.237:
 mov	sp,bp
 pop	bp
 ret
@@ -3518,7 +5239,7 @@ mov	bx,-2[bp]
 mov	al,_variables[bx]
 xor	ah,ah
 push	ax
-mov	bx,#.1AA
+mov	bx,#.243
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*6
@@ -3562,8 +5283,8 @@ inc	sp
 !BCC_EOS
 mov	ax,[_gosub_stack_ptr]
 cmp	ax,*$A
-jge 	.1AB
-.1AC:
+jge 	.244
+.245:
 call	_tokenizer_num
 push	ax
 mov	bx,[_gosub_stack_ptr]
@@ -3582,15 +5303,15 @@ call	_jump_linenum
 inc	sp
 inc	sp
 !BCC_EOS
-jmp .1AD
-.1AB:
-mov	bx,#.1AE
+jmp .246
+.244:
+mov	bx,#.247
 push	bx
 call	_DEBUG_PRINTF
 inc	sp
 inc	sp
 !BCC_EOS
-.1AD:
+.246:
 mov	sp,bp
 pop	bp
 ret
@@ -3605,8 +5326,8 @@ mov	sp,bp
 !BCC_EOS
 mov	ax,[_gosub_stack_ptr]
 test	ax,ax
-jle 	.1AF
-.1B0:
+jle 	.248
+.249:
 mov	ax,[_gosub_stack_ptr]
 dec	ax
 mov	[_gosub_stack_ptr],ax
@@ -3617,14 +5338,14 @@ push	_gosub_stack[bx]
 call	_jump_linenum
 mov	sp,bp
 !BCC_EOS
-jmp .1B1
-.1AF:
-mov	bx,#.1B2
+jmp .24A
+.248:
+mov	bx,#.24B
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
 !BCC_EOS
-.1B1:
+.24A:
 pop	bp
 ret
 ! Register BX used in function return_statement
@@ -3651,8 +5372,8 @@ inc	sp
 !BCC_EOS
 mov	ax,[_for_stack_ptr]
 test	ax,ax
-jle 	.1B3
-.1B5:
+jle 	.24C
+.24E:
 mov	ax,[_for_stack_ptr]
 dec	ax
 mov	dx,ax
@@ -3663,8 +5384,8 @@ mov	bx,ax
 add	bx,#_for_stack
 mov	ax,-2[bp]
 cmp	ax,2[bx]
-jne 	.1B3
-.1B4:
+jne 	.24C
+.24D:
 push	-2[bp]
 call	_ubasic_get_variable
 inc	sp
@@ -3690,8 +5411,8 @@ inc	sp
 inc	sp
 pop	bx
 cmp	ax,4[bx]
-jg  	.1B6
-.1B7:
+jg  	.24F
+.250:
 mov	ax,[_for_stack_ptr]
 dec	ax
 mov	dx,ax
@@ -3704,8 +5425,8 @@ call	_jump_linenum
 inc	sp
 inc	sp
 !BCC_EOS
-jmp .1B8
-.1B6:
+jmp .251
+.24F:
 mov	ax,[_for_stack_ptr]
 dec	ax
 mov	[_for_stack_ptr],ax
@@ -3716,9 +5437,9 @@ call	_accept
 inc	sp
 inc	sp
 !BCC_EOS
-.1B8:
-jmp .1B9
-.1B3:
+.251:
+jmp .252
+.24C:
 push	-2[bp]
 mov	ax,[_for_stack_ptr]
 dec	ax
@@ -3729,7 +5450,7 @@ shl	ax,*1
 mov	bx,ax
 add	bx,#_for_stack
 push	2[bx]
-mov	bx,#.1BA
+mov	bx,#.253
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*6
@@ -3740,7 +5461,7 @@ call	_accept
 inc	sp
 inc	sp
 !BCC_EOS
-.1B9:
+.252:
 mov	sp,bp
 pop	bp
 ret
@@ -3794,8 +5515,8 @@ inc	sp
 !BCC_EOS
 mov	ax,[_for_stack_ptr]
 cmp	ax,*4
-jge 	.1BB
-.1BC:
+jge 	.254
+.255:
 call	_tokenizer_num
 push	ax
 mov	bx,[_for_stack_ptr]
@@ -3840,7 +5561,7 @@ add	bx,dx
 shl	bx,*1
 add	bx,#_for_stack
 push	2[bx]
-mov	bx,#.1BD
+mov	bx,#.256
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*6
@@ -3849,15 +5570,15 @@ mov	ax,[_for_stack_ptr]
 inc	ax
 mov	[_for_stack_ptr],ax
 !BCC_EOS
-jmp .1BE
-.1BB:
-mov	bx,#.1BF
+jmp .257
+.254:
+mov	bx,#.258
 push	bx
 call	_DEBUG_PRINTF
 inc	sp
 inc	sp
 !BCC_EOS
-.1BE:
+.257:
 mov	sp,bp
 pop	bp
 ret
@@ -3886,8 +5607,8 @@ mov	-2[bp],ax
 !BCC_EOS
 mov	ax,-2[bp]
 cmp	ax,*5
-jne 	.1C0
-.1C1:
+jne 	.259
+.25A:
 mov	ax,*5
 push	ax
 call	_accept
@@ -3896,82 +5617,82 @@ inc	sp
 !BCC_EOS
 call	_let_statement
 !BCC_EOS
-br 	.1C2
-.1C0:
+br 	.25B
+.259:
 mov	ax,-2[bp]
 cmp	ax,*4
-jne 	.1C3
-.1C4:
+jne 	.25C
+.25D:
 call	_let_statement
 !BCC_EOS
-br 	.1C5
-.1C3:
+br 	.25E
+.25C:
 mov	ax,-2[bp]
 cmp	ax,*7
-jne 	.1C6
-.1C7:
+jne 	.25F
+.260:
 call	_if_statement
 !BCC_EOS
-br 	.1C8
-.1C6:
+br 	.261
+.25F:
 mov	ax,-2[bp]
 cmp	ax,*$A
-jne 	.1C9
-.1CA:
+jne 	.262
+.263:
 call	_for_statement
 !BCC_EOS
-jmp .1CB
-.1C9:
+jmp .264
+.262:
 mov	ax,-2[bp]
 cmp	ax,*$C
-jne 	.1CC
-.1CD:
+jne 	.265
+.266:
 call	_next_statement
 !BCC_EOS
-jmp .1CE
-.1CC:
+jmp .267
+.265:
 mov	ax,-2[bp]
 cmp	ax,*$D
-jne 	.1CF
-.1D0:
+jne 	.268
+.269:
 call	_goto_statement
 !BCC_EOS
-jmp .1D1
-.1CF:
+jmp .26A
+.268:
 mov	ax,-2[bp]
 cmp	ax,*$E
-jne 	.1D2
-.1D3:
+jne 	.26B
+.26C:
 call	_gosub_statement
 !BCC_EOS
-jmp .1D4
-.1D2:
+jmp .26D
+.26B:
 mov	ax,-2[bp]
 cmp	ax,*$F
-jne 	.1D5
-.1D6:
+jne 	.26E
+.26F:
 call	_return_statement
 !BCC_EOS
-jmp .1D7
-.1D5:
+jmp .270
+.26E:
 mov	ax,-2[bp]
 cmp	ax,*6
-jne 	.1D8
-.1D9:
+jne 	.271
+.272:
 call	_print_statement
 !BCC_EOS
-jmp .1DA
-.1D8:
+jmp .273
+.271:
 mov	ax,-2[bp]
 cmp	ax,*$11
-jne 	.1DB
-.1DC:
+jne 	.274
+.275:
 call	_end_statement
 !BCC_EOS
-jmp .1DD
-.1DB:
+jmp .276
+.274:
 push	-2[bp]
-mov	bx,#.1DE
+mov	bx,#.277
 push	bx
 call	_DEBUG_PRINTF
 add	sp,*4
@@ -3982,16 +5703,16 @@ call	_exit
 inc	sp
 inc	sp
 !BCC_EOS
-.1DD:
-.1DA:
-.1D7:
-.1D4:
-.1D1:
-.1CE:
-.1CB:
-.1C8:
-.1C5:
-.1C2:
+.276:
+.273:
+.270:
+.26D:
+.26A:
+.267:
+.264:
+.261:
+.25E:
+.25B:
 mov	sp,bp
 pop	bp
 ret
@@ -4001,7 +5722,7 @@ push	bp
 mov	bp,sp
 call	_tokenizer_num
 push	ax
-mov	bx,#.1DF
+mov	bx,#.278
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
@@ -4023,9 +5744,9 @@ push	bp
 mov	bp,sp
 call	_tokenizer_finished
 test	ax,ax
-je  	.1E0
-.1E1:
-mov	bx,#.1E2
+je  	.279
+.27A:
+mov	bx,#.27B
 push	bx
 call	_DEBUG_PRINTF
 mov	sp,bp
@@ -4033,7 +5754,7 @@ mov	sp,bp
 pop	bp
 ret
 !BCC_EOS
-.1E0:
+.279:
 call	_line_statement
 !BCC_EOS
 pop	bp
@@ -4045,17 +5766,17 @@ push	bp
 mov	bp,sp
 mov	ax,[_ended]
 test	ax,ax
-jne 	.1E4
-.1E5:
+jne 	.27D
+.27E:
 call	_tokenizer_finished
 test	ax,ax
-je  	.1E3
-.1E4:
+je  	.27C
+.27D:
 mov	al,*1
-jmp	.1E6
-.1E3:
+jmp	.27F
+.27C:
 xor	al,al
-.1E6:
+.27F:
 xor	ah,ah
 pop	bp
 ret
@@ -4068,17 +5789,17 @@ push	bp
 mov	bp,sp
 mov	ax,4[bp]
 test	ax,ax
-jl  	.1E7
-.1E9:
+jl  	.280
+.282:
 mov	ax,4[bp]
 cmp	ax,*$1A
-jge 	.1E7
-.1E8:
+jge 	.280
+.281:
 mov	bx,4[bp]
 mov	al,6[bp]
 mov	_variables[bx],al
 !BCC_EOS
-.1E7:
+.280:
 pop	bp
 ret
 ! Register BX used in function ubasic_set_variable
@@ -4089,19 +5810,19 @@ push	bp
 mov	bp,sp
 mov	ax,4[bp]
 test	ax,ax
-jl  	.1EA
-.1EC:
+jl  	.283
+.285:
 mov	ax,4[bp]
 cmp	ax,*$1A
-jge 	.1EA
-.1EB:
+jge 	.283
+.284:
 mov	bx,4[bp]
 mov	al,_variables[bx]
 xor	ah,ah
 pop	bp
 ret
 !BCC_EOS
-.1EA:
+.283:
 xor	ax,ax
 pop	bp
 ret
@@ -4112,12 +5833,12 @@ _exit:
 !BCC_EOS
 push	bp
 mov	bp,sp
-.1EF:
+.288:
 !BCC_EOS
-.1EE:
-jmp	.1EF
-.1F0:
-.1ED:
+.287:
+jmp	.288
+.289:
+.286:
 pop	bp
 ret
 export	_main
@@ -4126,48 +5847,228 @@ push	bp
 mov	bp,sp
 call	_init_usart
 !BCC_EOS
-mov	bx,#.1F1
-push	bx
-call	_printf
-mov	sp,bp
+call	_init_framebuffer
 !BCC_EOS
-mov	bx,#.1F2
-push	bx
-call	_ubasic_init
-mov	sp,bp
+call	_init_terminal
 !BCC_EOS
-call	_ubasic_run
+.28C:
+call	_run_terminal
 !BCC_EOS
-.1F5:
-call	_ubasic_run
-!BCC_EOS
-.1F4:
-call	_ubasic_finished
-test	ax,ax
-je 	.1F5
-.1F6:
-!BCC_EOS
-.1F3:
-.1F9:
-!BCC_EOS
-.1F8:
-jmp	.1F9
-.1FA:
-.1F7:
+.28B:
+jmp	.28C
+.28D:
+.28A:
 pop	bp
 ret
-! Register BX used in function main
 .data
 .word 0
-.1F2:
-.1FB:
+.27B:
+.28E:
+.ascii	"uBASIC program finished"
+.byte	$A
+.byte	0
+.278:
+.28F:
+.ascii	"----------- Line number %d ---------"
+.byte	$A
+.byte	0
+.277:
+.290:
+.ascii	"ubasic.c: statement(): not implemented %"
+.ascii	"d"
+.byte	$A
+.byte	0
+.258:
+.291:
+.ascii	"for_statement: for stack depth exceeded"
+.byte	$A
+.byte	0
+.256:
+.292:
+.ascii	"for_statement: new for, var %d to %d"
+.byte	$A
+.byte	0
+.253:
+.293:
+.ascii	"next_statement: non-matching next (expec"
+.ascii	"ted %d, found %d)"
+.byte	$A
+.byte	0
+.24B:
+.294:
+.ascii	"return_statement: non-matching return"
+.byte	$A
+.byte	0
+.247:
+.295:
+.ascii	"gosub_statement: gosub stack exhausted"
+.byte	$A
+.byte	0
+.243:
+.296:
+.ascii	"let_statement: assign %d to %d"
+.byte	$A
+.byte	0
+.234:
+.297:
+.ascii	"if_statement: relation %d"
+.byte	$A
+.byte	0
+.233:
+.298:
+.ascii	"End of print"
+.byte	$A
+.byte	0
+.232:
+.299:
+.byte	$A
+.byte	0
+.22E:
+.29A:
+.ascii	"%d"
+.byte	0
+.226:
+.29B:
+.ascii	" "
+.byte	0
+.222:
+.29C:
+.ascii	"%s"
+.byte	0
+.21F:
+.29D:
+.ascii	"Print loop"
+.byte	$A
+.byte	0
+.21A:
+.29E:
+.ascii	"jump_linenum: Found line %d"
+.byte	$A
+.byte	0
+.1FC:
+.29F:
+.ascii	"relation: %d %d %d"
+.byte	$A
+.byte	0
+.1F8:
+.2A0:
+.ascii	"relation: token %d"
+.byte	$A
+.byte	0
+.1F7:
+.2A1:
+.ascii	"expr: %d"
+.byte	$A
+.byte	0
+.1EB:
+.2A2:
+.ascii	"expr: %d %d %d"
+.byte	$A
+.byte	0
+.1E7:
+.2A3:
+.ascii	"expr: token %d"
+.byte	$A
+.byte	0
+.1E6:
+.2A4:
+.ascii	"term: %d"
+.byte	$A
+.byte	0
+.1DC:
+.2A5:
+.ascii	"term: %d %d %d"
+.byte	$A
+.byte	0
+.1D8:
+.2A6:
+.ascii	"term: token %d"
+.byte	$A
+.byte	0
+.1D5:
+.2A7:
+.ascii	"factor: number %d"
+.byte	$A
+.byte	0
+.1D0:
+.2A8:
+.ascii	"factor: token %d"
+.byte	$A
+.byte	0
+.1CF:
+.2A9:
+.ascii	"varfactor: obtaining %d from variable %d"
+.byte	$A
+.byte	0
+.1CE:
+.2AA:
+.ascii	"Expected %d, got it"
+.byte	$A
+.byte	0
+.1CD:
+.2AB:
+.ascii	"Token not what was expected (expected %d"
+.ascii	", got %d)"
+.byte	$A
+.byte	0
+.1C8:
+.2AC:
+.ascii	"edit"
+.byte	0
+.1C4:
+.2AD:
+.ascii	"run"
+.byte	0
+.1C0:
+.2AE:
+.ascii	"list"
+.byte	0
+.1BE:
+.2AF:
+.ascii	"> "
+.byte	0
+.1BD:
+.2B0:
+.byte	$A
+.ascii	"Ready!"
+.byte	$A
+.byte	0
+.1BB:
+.2B1:
+.byte	$A
+.ascii	"ERR CMD!"
+.byte	$A
+.byte	0
+.1B6:
+.2B2:
+.ascii	"BASIC 8086 Version 0.0.1"
+.byte	$A
+.byte	0
+.199:
+.2B3:
+.ascii	"out of buffer"
+.byte	0
+.196:
+.2B4:
+.ascii	"-------------------------"
+.byte	0
+.195:
+.2B5:
+.ascii	"Q quit S save B F P N %3d"
+.byte	0
+.191:
+.2B6:
+.ascii	"%s"
+.byte	0
+.190:
+.2B7:
 .ascii	"10 gosub 100"
 .byte	$A
 .ascii	"20 for i = 1 to 10"
 .byte	$A
 .ascii	"30 for b = 1 to 3"
 .byte	$A
-.ascii	"31 if b = 2 then print \"num is:\", i"
+.ascii	"31 print b, \" + \", i, \" = \", i + b"
 .byte	$A
 .ascii	"32 next b"
 .byte	$A
@@ -4182,257 +6083,110 @@ ret
 .ascii	"110 return"
 .byte	$A
 .byte	0
-.1F1:
-.1FC:
-.byte	$A
-.ascii	"BASIC 8086 Version 0.0.1"
-.byte	$A
-.byte	0
-.1E2:
-.1FD:
-.ascii	"uBASIC program finished"
-.byte	$A
-.byte	0
-.1DF:
-.1FE:
-.ascii	"----------- Line number %d ---------"
-.byte	$A
-.byte	0
-.1DE:
-.1FF:
-.ascii	"ubasic.c: statement(): not implemented %"
-.ascii	"d"
-.byte	$A
-.byte	0
-.1BF:
-.200:
-.ascii	"for_statement: for stack depth exceeded"
-.byte	$A
-.byte	0
-.1BD:
-.201:
-.ascii	"for_statement: new for, var %d to %d"
-.byte	$A
-.byte	0
-.1BA:
-.202:
-.ascii	"next_statement: non-matching next (expec"
-.ascii	"ted %d, found %d)"
-.byte	$A
-.byte	0
-.1B2:
-.203:
-.ascii	"return_statement: non-matching return"
-.byte	$A
-.byte	0
-.1AE:
-.204:
-.ascii	"gosub_statement: gosub stack exhausted"
-.byte	$A
-.byte	0
-.1AA:
-.205:
-.ascii	"let_statement: assign %d to %d"
-.byte	$A
-.byte	0
-.19B:
-.206:
-.ascii	"if_statement: relation %d"
-.byte	$A
-.byte	0
-.19A:
-.207:
-.ascii	"End of print"
-.byte	$A
-.byte	0
-.199:
-.208:
-.byte	$A
-.byte	0
-.18E:
-.209:
-.ascii	" "
-.byte	0
-.188:
-.20A:
-.ascii	"Print loop"
-.byte	$A
-.byte	0
-.183:
-.20B:
-.ascii	"jump_linenum: Found line %d"
-.byte	$A
-.byte	0
-.165:
-.20C:
-.ascii	"relation: %d %d %d"
-.byte	$A
-.byte	0
-.161:
-.20D:
-.ascii	"relation: token %d"
-.byte	$A
-.byte	0
-.160:
-.20E:
-.ascii	"expr: %d"
-.byte	$A
-.byte	0
-.154:
-.20F:
-.ascii	"expr: %d %d %d"
-.byte	$A
-.byte	0
-.150:
-.210:
-.ascii	"expr: token %d"
-.byte	$A
-.byte	0
-.14F:
-.211:
-.ascii	"term: %d"
-.byte	$A
-.byte	0
-.145:
-.212:
-.ascii	"term: %d %d %d"
-.byte	$A
-.byte	0
-.141:
-.213:
-.ascii	"term: token %d"
-.byte	$A
-.byte	0
-.13E:
-.214:
-.ascii	"factor: number %d"
-.byte	$A
-.byte	0
-.139:
-.215:
-.ascii	"factor: token %d"
-.byte	$A
-.byte	0
-.138:
-.216:
-.ascii	"varfactor: obtaining %d from variable %d"
-.byte	$A
-.byte	0
-.137:
-.217:
-.ascii	"Expected %d, got it"
-.byte	$A
-.byte	0
-.136:
-.218:
-.ascii	"Token not what was expected (expected %d"
-.ascii	", got %d)"
-.byte	$A
-.byte	0
-.12D:
-.219:
+.18B:
+.2B8:
 .ascii	"tokenizer_error_print: '%s'"
 .byte	$A
 .byte	0
-.126:
-.21A:
+.184:
+.2B9:
 .ascii	"tokenizer_next: '%p' %d"
 .byte	$A
 .byte	0
-.121:
-.21B:
+.17F:
+.2BA:
 .ascii	"tokenizer_next: %p"
 .byte	$A
 .byte	0
-.109:
-.21C:
+.167:
+.2BB:
 .ascii	"get_next_token: error due to too long nu"
 .ascii	"mber"
 .byte	$A
 .byte	0
-.107:
-.21D:
+.165:
+.2BC:
 .ascii	"get_next_token: error due to malformed n"
 .ascii	"umber"
 .byte	$A
 .byte	0
-.104:
-.21E:
+.162:
+.2BD:
 .ascii	"get_next_token: error due to too short n"
 .ascii	"umber"
 .byte	$A
 .byte	0
-.F6:
-.21F:
+.154:
+.2BE:
 .ascii	"get_next_token(): '%p'"
 .byte	$A
 .byte	0
-.C9:
-.220:
+.127:
+.2BF:
 .ascii	"end"
 .byte	0
-.C8:
-.221:
+.126:
+.2C0:
 .ascii	"call"
 .byte	0
-.C7:
-.222:
+.125:
+.2C1:
 .ascii	"return"
 .byte	0
-.C6:
-.223:
+.124:
+.2C2:
 .ascii	"gosub"
 .byte	0
-.C5:
-.224:
+.123:
+.2C3:
 .ascii	"goto"
 .byte	0
-.C4:
-.225:
+.122:
+.2C4:
 .ascii	"next"
 .byte	0
-.C3:
-.226:
+.121:
+.2C5:
 .ascii	"to"
 .byte	0
-.C2:
-.227:
+.120:
+.2C6:
 .ascii	"for"
 .byte	0
-.C1:
-.228:
+.11F:
+.2C7:
 .ascii	"else"
 .byte	0
-.C0:
-.229:
+.11E:
+.2C8:
 .ascii	"then"
 .byte	0
-.BF:
-.22A:
+.11D:
+.2C9:
 .ascii	"if"
 .byte	0
-.BE:
-.22B:
+.11C:
+.2CA:
 .ascii	"print"
 .byte	0
-.BD:
-.22C:
+.11B:
+.2CB:
 .ascii	"let"
 .byte	0
-.7D:
-.22D:
+.7A:
+.2CC:
 .ascii	" %08LX"
 .byte	0
-.77:
-.22E:
+.74:
+.2CD:
 .ascii	" %04X"
 .byte	0
-.68:
-.22F:
+.65:
+.2CE:
 .ascii	" %02X"
 .byte	0
-.5F:
-.230:
+.5C:
+.2CF:
 .ascii	"%08lX "
 .byte	0
 .bss
@@ -4450,12 +6204,24 @@ _program_ptr:
 .byte $bd,$bd
 _ended:
 .byte $bd,$bd
+_line_num:
+.byte $bd
+_cmd_status:
+.byte $bd
 _putch_pos:
 .byte $bd
 _putch_buffer:
 .byte $bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd
+_line_pos:
+.byte $bd
 _variables:
 .byte $bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd
+_inp_buff:
+.byte $bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd
+_line_count:
+.byte $bd
+_alpha_dram:
+.byte $bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd
 _gosub_stack:
 .byte $bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd,$bd
 _for_stack:

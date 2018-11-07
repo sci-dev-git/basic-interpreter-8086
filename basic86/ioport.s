@@ -8,7 +8,7 @@ _outb:
 	sub	sp,*4
 	out	dx
 	push	bx
-   ret
+  ret
 
 ! int inb( int port );
 ! reads a byte from the i/o port  port  and returns it
@@ -21,4 +21,4 @@ _inb:
 	in	dx
 	sub	ah,ah
 	push	bx
-   ret
+  ret

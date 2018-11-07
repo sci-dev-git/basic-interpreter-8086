@@ -6,7 +6,7 @@ TARGET_LD = python ld.py
 TARGET_RELOC = python reloc.py
 
 SRCS = bootloader.s ioport.s main.asm
-SRC_INC = rtl_ctype.inc rtl_stdio.inc rtl_int.inc rtl_string.inc rtl_misc.inc ubasic.inc tokenizer.inc terminal.inc helper.inc  segment86.inc bsp.inc
+SRC_INC = rtl_ctype.inc rtl_stdio.inc rtl_int.inc rtl_string.inc rtl_misc.inc ubasic.inc tokenizer.inc terminal.inc helper.inc  segment86.inc framebuffer.inc bsp.inc
 
 all: basic86.bin
 

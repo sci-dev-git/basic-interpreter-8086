@@ -20,6 +20,8 @@
 #define L_strncmp
 #define L_strchr
 #define L_memcpy
+#define L_memset
+
 
 /* This is a basic string package; it includes the most used functions
 
@@ -679,6 +681,44 @@ unsigned int srcseg, srcoff, destseg, destoff, len;
 #endif
 
 #endif
+
+int
+strcasecmp(s,d)
+char *s;
+char *d;
+{
+   for(;;)
+   {
+      if(*s != *d )
+      {
+	 if(tolower(*s)!= tolower(*d))
+	    return *s - *d;
+      }
+      else if(*s == '\0' ) break;
+      s++; d++;
+   }
+   return 0;
+}
+
+int
+strncasecmp(s,d,l)
+char *s;
+char *d;
+size_t l;
+{
+   while(l>0)
+   {
+      if(*s != *d )
+      {
+	 if(tolower(*s)!= tolower(*d))
+	    return *s - *d;
+      }
+      else
+	 if(*s == '\0' ) return 0;
+      s++; d++; l--;
+   }
+   return 0;
+}
 
 /********************** THE END ********************************************/
 

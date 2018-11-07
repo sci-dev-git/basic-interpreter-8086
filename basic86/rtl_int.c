@@ -9,6 +9,7 @@
 #define L___imodu
 #define L___lcmpl
 #define L___lsubl
+#define L___ldecl
 #define L___lmodul
 #define L___idivu
 #define L___ldivul

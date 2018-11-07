@@ -252,23 +252,22 @@ print_statement()
     DEBUG_PRINTF("Print loop\n");
     if(tokenizer_token()== TOKENIZER_STRING) {
       tokenizer_string(string,sizeof(string));
-      print_str(string);
+      printf("%s",string);
       tokenizer_next();
     } else if(tokenizer_token()== TOKENIZER_COMMA) {
-      print_str(" ");
+      printf(" ");
       tokenizer_next();
     } else if(tokenizer_token()== TOKENIZER_SEMICOLON) {
       tokenizer_next();
     } else if(tokenizer_token()== TOKENIZER_VARIABLE ||
 	      tokenizer_token()== TOKENIZER_NUMBER) {
-      print_ui(expr());
+      printf("%d",expr());
     } else {
       break;
     }
   } while(tokenizer_token()!= TOKENIZER_CR &&
 	  tokenizer_token()!= TOKENIZER_ENDOFINPUT);
-  print_str("\n");
-  usart_flush();
+  printf("\n");
   DEBUG_PRINTF("End of print\n");
   tokenizer_next();
 }
@@ -468,9 +467,9 @@ ubasic_finished()
 /*---------------------------------------------------------------------------*/
 void
 ubasic_set_variable(varnum,value)
-# 464 
+# 463 
 int varnum;
-# 464 
+# 463 
 int value;
 {
   if(varnum >= 0 && varnum < MAX_VARNUM) {
@@ -480,7 +479,7 @@ int value;
 /*---------------------------------------------------------------------------*/
 int
 ubasic_get_variable(varnum)
-# 472 
+# 471 
 int varnum;
 {
   if(varnum >= 0 && varnum < MAX_VARNUM) {
@@ -492,7 +491,7 @@ int varnum;
 
 void
 exit(code)
-# 482 
+# 481 
 int code;
 {
     while(1);

@@ -246,23 +246,22 @@ print_statement(void)
     DEBUG_PRINTF("Print loop\n");
     if(tokenizer_token() == TOKENIZER_STRING) {
       tokenizer_string(string, sizeof(string));
-      print_str(string);
+      printf("%s", string);
       tokenizer_next();
     } else if(tokenizer_token() == TOKENIZER_COMMA) {
-      print_str(" ");
+      printf(" ");
       tokenizer_next();
     } else if(tokenizer_token() == TOKENIZER_SEMICOLON) {
       tokenizer_next();
     } else if(tokenizer_token() == TOKENIZER_VARIABLE ||
 	      tokenizer_token() == TOKENIZER_NUMBER) {
-      print_ui(expr());
+      printf("%d", expr());
     } else {
       break;
     }
   } while(tokenizer_token() != TOKENIZER_CR &&
 	  tokenizer_token() != TOKENIZER_ENDOFINPUT);
-  print_str("\n");
-  usart_flush();
+  printf("\n");
   DEBUG_PRINTF("End of print\n");
   tokenizer_next();
 }

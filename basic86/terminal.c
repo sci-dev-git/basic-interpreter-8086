@@ -1,51 +1,132 @@
-/*****************************************************************************
-*  Module Name:       Terminal I/O
-*  
-*  Created By:        Mikhail Usachev
-*
-*  Original Release:  October 29, 2009 
-*
-*  Module Description:  
-*  Provides functions to interface with a Terminal using USCIA_0
-*
-*****************************************************************************/
-
-#include "terminal.h"
 #include "rtl_stdarg.h"
 #include "rtl_stdio.h"
+#include "rtl_string.h"
 #include "bsp.h"
+#include "ubasic.h"
+
+#include "terminal.h"
+
+#define MAX_INPUT_LEN 128
+#define MAX_EDIT_LINE 6
 
 #define VK_RETURN    13
 #define RXTX_MASK    0x30
 #define MAX_LEN      256
-
-char* cur_ptr = 0;
-char* ptr_max = 0;
-
-void init_terminal()
- { init_usart();
- }
-
 #define CR  0x0d
 
-void read_str(char* ptr, int max_sz)
-{ unsigned char i;
-  if (max_sz <= 0)
-      return;
-  cur_ptr = ptr;
-  ptr_max = cur_ptr + max_sz; 
-  *ptr = 0;
+enum {
+  CMD_READY = 0,
+  CMD_UNKNOWN_INP,
+};
+
+static char inp_buff[MAX_INPUT_LEN];
+static char cmd_status;
+
+char *prog_codes = "10 gosub 100\n"
+   "20 for i = 1 to 10\n"
+   "30 for b = 1 to 3\n"
+   "31 print b, \" + \", i, \" = \", i + b\n"
+   "32 next b\n"
+   "40 next i\n"
+   "50 print \"end\"\n"
+   "60 end\n"
+   "100 print \"subroutine\"\n"
+   "110 return\n";
+
+static int cmd_list() {
+  printf("%s", prog_codes);
+  return 0;
+}
+
+static int cmd_edit() {
+  char y, ch;
+  const char *code = prog_codes;
+  size_t code_len = strlen(prog_codes);
+  const char *prev_code_page[16];
+  char page = 0;
   
-#if 0
-  P3SEL |= RXTX_MASK;                       // P3.4,5 = USCI_A0 TXD/RXD
-  UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
-  IE2 |= UCA0RXIE;                          // Enable USCI_A0 RX interrupt
+  for(;;) {
+    framebuffer_clear();
+    printf("Q quit S save B F P N %3d", page + 1);
+    printf("-------------------------");
+    
+    if(page >= sizeof(prev_code_page) / sizeof(*prev_code_page)) {
+      printf("out of buffer");
+      goto retry;
+    }
+    
+    prev_code_page[page++] = code;
+    while(*code) {
+      framebuffer_putch(*code);
+      code++;
+      if(line_count > MAX_EDIT_LINE) break;
+    }
+    
+retry:
+    ch = usart_getch();
+    if(ch == 14) {  /* Ctrl + N */
+      if((int)(code) - (int)(prog_codes) >= code_len-2)
+        goto retry;
+      
+    } else if(ch == 16) { /* Ctrl + P */
+      if(page >= 2) {
+        page--;
+        code = prev_code_page[--page];
+      } else
+        goto retry;
+      
+    } else if(ch == 17) { /* Ctrl + Q */
+      framebuffer_clear();
+      break;
+      
+    } else if(ch == 19) { /* Ctrl + S */
+      goto retry;
+      
+    } else
+      goto retry;
+  }
   
-  __bis_SR_register(LPM0_bits + GIE);       // Enter LPM0, interrupts enabled
+  return 0;
+}
 
-  UCA0CTL1 |= UCSWRST;                      // **STOP UART**
-  P3SEL &= ~RXTX_MASK; 
-#endif
-} 
+static int cmd_run() {
+  ubasic_init(prog_codes);
+  
+  ubasic_run();
+  do {
+    ubasic_run();
+  } while(!ubasic_finished());
+  
+  return 0;
+}
 
+void init_terminal(void)
+{
+  printf("BASIC 8086 Version 0.0.1\n");
+  cmd_status = 0;
+}
 
+void run_terminal(void)
+{
+  char ch;
+  
+  switch(cmd_status) {
+    case CMD_UNKNOWN_INP:
+      printf("\nERR CMD!\n"); break;
+    default:
+      printf("\nReady!\n");
+  }
+  printf("> ");
+  
+  gets(inp_buff, sizeof(inp_buff)-1);
+  
+  if(0 == strcasecmp(inp_buff, "list")) {
+    cmd_status = cmd_list();
+  } else if(0 == strcasecmp(inp_buff, "run")) {
+    cmd_status = cmd_run();
+  } else if(0 == strcasecmp(inp_buff, "edit")) {
+    cmd_status = cmd_edit();
+  } else {
+    cmd_status = CMD_UNKNOWN_INP;
+  }
+}

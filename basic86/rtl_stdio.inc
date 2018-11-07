@@ -1,11 +1,11 @@
 #include "ubasic.h"
 #include "rtl_stdarg.h"
+#include "framebuffer.h"
 #include "bsp.h"
 
 #include "rtl_stdio.h"
 
 #define _USE_XFUNC_OUT  1   /* 1: Use output functions */
-#define _CR_CRLF        1   /* 1: Convert \n ==> \r\n in the output char */
 #define _USE_LONGLONG   0   /* 1: Enable long long integer in type "ll". */
 #define _LONGLONG_t     long long   /* Platform dependent long long integer type */
 
@@ -24,24 +24,22 @@ putc(c)
 # 23 
 char c;
 {
-  if (_CR_CRLF && c == '\n') putc('\r');     /* CR -> CRLF */
-
   if (outptr)         /* Destination is memory */
     {
       *outptr++ = (unsigned char)c;
       return;
     }
-  putch((unsigned char)c);
+  framebuffer_putch(c);
 }
 
 /** Put a null-terminated string */
 void
 puts (str)
-# 37 
+# 35 
 const char* str;
 
 {
-    print_str(str);
+    framebuffer_print(str);
  }
 
 
@@ -70,9 +68,9 @@ const char* str;
 static
 void
 vprintf(fmt,arp )
-# 68 
+# 66 
 const char* fmt;
-# 68 
+# 66 
 va_list arp ;
 {
   unsigned int r, i, j, w, f;
@@ -197,8 +195,6 @@ va_list arp ;
       do putc(s[--i]); while (i != 0);
       while (j++ < w) putc(' ');
     }
-    
-    usart_flush();
 }
 
 /** Put a formatted string to the default device
@@ -207,7 +203,7 @@ va_list arp ;
  */
 void
 printf(fmt)
-# 201 
+# 197 
 const char* fmt;
 {
   va_list arp;
@@ -224,9 +220,9 @@ const char* fmt;
  */
 void
 sprintf(buff,fmt)
-# 216 
+# 212 
 char* buff;
-# 216 
+# 212 
 const char* fmt;
 {
   va_list arp;
@@ -244,11 +240,11 @@ const char* fmt;
 
 void
 vsprintf(buff,fmt,arp )
-# 232 
+# 228 
 char* buff;
-# 232 
+# 228 
 const char* fmt;
-# 232 
+# 228 
 va_list arp ;
 {
   outptr = buff;      /* Switch destination for memory */
@@ -262,13 +258,13 @@ va_list arp ;
 /** Dump a line of binary dump */
 void
 put_dump (buff,addr,len,width)
-# 244 
+# 240 
 const void* buff;
-# 244 
+# 240 
 unsigned long addr;
-# 244 
+# 240 
 int len;
-# 244 
+# 240 
 int width;
 {
   int i;
@@ -309,9 +305,9 @@ int width;
 /** Get a line from the input */
 int
 gets (buff,len)
-# 283 
+# 279 
 char* buff;
-# 283 
+# 279 
 int len;
 {
   int c, i;
@@ -319,7 +315,7 @@ int len;
   i = 0;
   for (;;)
     {
-      c = 0/*getch()*/;             /* Get a char from the incoming stream */
+      c = usart_getch();          /* Get a char from the incoming stream */
       if (!c) return 0;           /* End of stream? */
       if (c == '\r') break;       /* End of line? */
       if (c == '\b' && i)         /* Back space? */

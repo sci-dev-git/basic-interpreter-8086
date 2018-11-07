@@ -1,5 +1,6 @@
 
 #include "io.h"
+#include "bsp.h"
 
 /* 8251A USART */
  
@@ -23,9 +24,15 @@ int usart_putch_out()
    putch_out_pos++;
    return 2;
  }
+ 
+char usart_getch()
 
-static unsigned char putch(c )
-# 27 
+{ while((inb(ADR_USART_STAT)& 0x02)== 0);
+   return inb(ADR_USART_DATA) >> 1;
+ }
+
+static unsigned char usart_putch(c )
+# 34 
 unsigned char c ;
 
 { putch_buffer[putch_pos] = c;
@@ -33,23 +40,23 @@ unsigned char c ;
    return c;
  }
 
-void print_str(s)
-# 34 
+void usart_print_str(s)
+# 41 
 char *s;
 
 { char c;
    while(s && *s)
     { c = *s;
       if (c == '\n')
-         putch('\r');
-      putch(*s);
+         usart_putch('\r');
+      usart_putch(*s);
       s++;
     }
    usart_flush();
  }
  
-void print_ui(i)
-# 47 
+void usart_print_ui(i)
+# 54 
 unsigned int i;
 
 { unsigned char val;
@@ -58,7 +65,7 @@ unsigned int i;
    while (temp >= 1)
     { val = (i / temp) % 10;
       if ((val!=0)|| printed || (temp == 1))
-       { putch(val + '0');
+       { usart_putch(val + '0');
          printed = 1;
        }
       if (temp == 1)

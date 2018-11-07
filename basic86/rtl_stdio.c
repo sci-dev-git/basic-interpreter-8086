@@ -1,11 +1,11 @@
 #include "ubasic.h"
 #include "rtl_stdarg.h"
+#include "framebuffer.h"
 #include "bsp.h"
 
 #include "rtl_stdio.h"
 
 #define _USE_XFUNC_OUT  1   /* 1: Use output functions */
-#define _CR_CRLF        1   /* 1: Convert \n ==> \r\n in the output char */
 #define _USE_LONGLONG   0   /* 1: Enable long long integer in type "ll". */
 #define _LONGLONG_t     long long   /* Platform dependent long long integer type */
 
@@ -22,14 +22,12 @@ static char *outptr = 0;
 void
 putc(char c)
 {
-  if (_CR_CRLF && c == '\n') putc('\r');     /* CR -> CRLF */
-
   if (outptr)         /* Destination is memory */
     {
       *outptr++ = (unsigned char)c;
       return;
     }
-  putch((unsigned char)c);
+  framebuffer_putch(c);
 }
 
 /** Put a null-terminated string */
@@ -37,7 +35,7 @@ void
 puts (const char* str)
 /* Put a string to the default device */
  {
-    print_str(str);
+    framebuffer_print(str);
  }
 
 
@@ -189,8 +187,6 @@ vprintf( const char* fmt, va_list arp )
       do putc(s[--i]); while (i != 0);
       while (j++ < w) putc(' ');
     }
-    
-    usart_flush();
 }
 
 /** Put a formatted string to the default device
@@ -287,7 +283,7 @@ gets (char* buff, int len)
   i = 0;
   for (;;)
     {
-      c = 0/*getch()*/;             /* Get a char from the incoming stream */
+      c = usart_getch();          /* Get a char from the incoming stream */
       if (!c) return 0;           /* End of stream? */
       if (c == '\r') break;       /* End of line? */
       if (c == '\b' && i)         /* Back space? */
